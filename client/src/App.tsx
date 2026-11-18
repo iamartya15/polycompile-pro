@@ -432,6 +432,12 @@ export default function App() {
   const [splitVertical, setSplitVertical] = useState(false);
   const [isFullscreenEditor, setIsFullscreenEditor] = useState(false);
   const [isFullscreenOutput, setIsFullscreenOutput] = useState(false);
+  // Share of the workspace given to the output panel (%), drag-adjustable, remembered.
+  const [outputPct, setOutputPct] = useState(() => {
+    const v = typeof window !== "undefined" ? Number(window.localStorage.getItem("pc-output-pct")) : NaN;
+    return Number.isFinite(v) && v >= 20 && v <= 75 ? v : 38;
+  });
+  const workspaceRef = useRef<HTMLDivElement | null>(null);
 
   // Toast & Modals
   const [toast, setToast] = useState<{ msg: string; type?: "info" | "success" | "error" | "warning" } | null>(null);
@@ -456,6 +462,37 @@ export default function App() {
     toastTimeoutRef.current = window.setTimeout(() => setToast(null), 3200);
   };
 
+  // Drag-to-resize the code/output split. Works for the side-by-side (row),
+  // stacked (column) and mobile layouts: the output panel always takes
+  // outputPct% of the workspace on the far edge.
+  const startSplitResize = (e: { preventDefault: () => void }) => {
+    e.preventDefault();
+    const container = workspaceRef.current;
+    if (!container) return;
+    const rect = container.getBoundingClientRect();
+    const columnLayout = isMobile || splitVertical;
+    const move = (ev: PointerEvent) => {
+      const pct = columnLayout
+        ? ((rect.bottom - ev.clientY) / rect.height) * 100
+        : ((rect.right - ev.clientX) / rect.width) * 100;
+      setOutputPct(Math.min(75, Math.max(20, pct)));
+    };
+    const up = () => {
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", up);
+    };
+    window.addEventListener("pointermove", move);
+    window.addEventListener("pointerup", up);
+  };
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem("pc-output-pct", String(Math.round(outputPct)));
+    } catch {
+      /* storage unavailable */
+    }
+  }, [outputPct]);
+
   // Screen Resize
   useEffect(() => {
     const handleResize = () => {
@@ -477,7 +514,7 @@ export default function App() {
       editorRef.current?.layout();
     }, 120);
     return () => clearTimeout(timer);
-  }, [sidebarOpen, splitVertical, isFullscreenEditor, isFullscreenOutput, mobileTab, isMobile]);
+  }, [sidebarOpen, splitVertical, isFullscreenEditor, isFullscreenOutput, mobileTab, isMobile, outputPct]);
 
   // Sync theme
   useEffect(() => {
@@ -571,7 +608,10 @@ export default function App() {
     }
 
     setRightTab("output");
-    if (isMobile) setMobileTab("console");
+    if (isMobile) {
+      setMobileTab("console");
+      setOutputPct((p) => Math.max(p, 45));
+    }
 
     const ctrl = new AbortController();
     abortRef.current = ctrl;
@@ -1170,12 +1210,12 @@ export default function App() {
         )}
 
         {/* WORKSPACE CONTENT AREA */}
-        <div className={`flex-1 flex ${isMobile ? "flex-col" : splitVertical ? "flex-col" : "flex-row"} overflow-hidden`}>
+        <div ref={workspaceRef} className={`flex-1 flex ${isMobile ? "flex-col" : splitVertical ? "flex-col" : "flex-row"} overflow-hidden`}>
           {/* EDITOR STAGE */}
           <div
             className={`flex flex-col bg-white dark:bg-[#0B1020] overflow-hidden ${
               isMobile
-                ? mobileTab === "code" ? "flex-1" : "hidden"
+                ? "flex-1"
                 : isFullscreenOutput ? "hidden" : isFullscreenEditor ? "flex-1" : "flex-1"
             }`}
           >
@@ -1276,13 +1316,35 @@ export default function App() {
             </div>
           </div>
 
+          {/* SPLIT RESIZE HANDLE — drag to adjust the output panel */}
+          {!isFullscreenEditor && !isFullscreenOutput && (
+            <div
+              onPointerDown={startSplitResize}
+              role="separator"
+              aria-label="Resize output panel"
+              title="Drag to resize panel"
+              className={`shrink-0 z-20 flex items-center justify-center touch-none bg-slate-200/80 dark:bg-slate-800/80 hover:bg-[#6366F1]/40 active:bg-[#6366F1]/60 transition-colors ${
+                isMobile || splitVertical ? "h-2.5 cursor-row-resize" : "w-2.5 cursor-col-resize"
+              }`}
+            >
+              <div className={`rounded-full bg-slate-400 dark:bg-slate-500 ${isMobile || splitVertical ? "w-10 h-1" : "w-1 h-10"}`} />
+            </div>
+          )}
+
           {/* SPLIT CONSOLE & PREVIEW STAGE */}
           <div
             className={`flex flex-col border-l border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0B1020] overflow-hidden ${
               isMobile
-                ? mobileTab === "console" || mobileTab === "preview" || mobileTab === "ai" ? "flex-1 border-l-0" : "hidden"
-                : isFullscreenEditor ? "hidden" : isFullscreenOutput ? "flex-1" : splitVertical ? "h-1/2 border-t border-l-0" : "w-full md:w-[420px] lg:w-[480px] xl:w-[540px]"
+                ? "border-l-0"
+                : isFullscreenEditor ? "hidden" : isFullscreenOutput ? "flex-1" : splitVertical ? "border-t border-l-0" : ""
             }`}
+            style={
+              isFullscreenEditor || isFullscreenOutput
+                ? undefined
+                : isMobile || splitVertical
+                ? { height: `${outputPct}%` }
+                : { width: `${outputPct}%` }
+            }
           >
             {/* Console Header Tabs */}
             <div className="h-9 border-b border-slate-200 dark:border-slate-800 bg-slate-50/90 dark:bg-[#111827] px-2 sm:px-3 flex items-center justify-between shrink-0 select-none text-xs">
@@ -1456,7 +1518,10 @@ export default function App() {
       {isMobile && (
         <nav className="h-12 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-[#111827] flex items-center justify-around shrink-0 z-30 select-none text-[11px] font-semibold" role="navigation" aria-label="Mobile Navigation">
           <button
-            onClick={() => setMobileTab("code")}
+            onClick={() => {
+              setMobileTab("code");
+              setOutputPct(30);
+            }}
             className={`flex flex-col items-center justify-center py-1 flex-1 transition-colors ${
               mobileTab === "code" ? "text-[#6366F1] dark:text-[#22D3EE] font-bold" : "text-slate-500 dark:text-[#94A3B8]"
             }`}
@@ -1470,6 +1535,7 @@ export default function App() {
               onClick={() => {
                 setMobileTab("preview");
                 setRightTab("preview");
+                setOutputPct(55);
               }}
               className={`flex flex-col items-center justify-center py-1 flex-1 transition-colors ${
                 mobileTab === "preview" ? "text-[#6366F1] dark:text-[#22D3EE] font-bold" : "text-slate-500 dark:text-[#94A3B8]"
@@ -1483,6 +1549,7 @@ export default function App() {
               onClick={() => {
                 setMobileTab("console");
                 setRightTab("output");
+                setOutputPct(55);
               }}
               className={`flex flex-col items-center justify-center py-1 flex-1 relative transition-colors ${
                 mobileTab === "console" ? "text-[#6366F1] dark:text-[#22D3EE] font-bold" : "text-slate-500 dark:text-[#94A3B8]"
@@ -1502,6 +1569,7 @@ export default function App() {
             onClick={() => {
               setMobileTab("ai");
               setRightTab("ai");
+              setOutputPct(55);
             }}
             className={`flex flex-col items-center justify-center py-1 flex-1 transition-colors ${
               mobileTab === "ai" ? "text-[#6366F1] dark:text-[#22D3EE] font-bold" : "text-slate-500 dark:text-[#94A3B8]"

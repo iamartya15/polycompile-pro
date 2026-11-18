@@ -82,7 +82,10 @@ export function OutputPanel({
         </div>
         <p className="text-sm font-semibold text-slate-800 dark:text-[#F8FAFC]">Terminal Ready</p>
         <p className="text-xs text-slate-500 dark:text-[#94A3B8] mt-1 max-w-sm">
-          Press <kbd className="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-[#172033] border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-[#F8FAFC] font-mono text-[11px] shadow-xs">Ctrl+Enter</kbd> or click Run to execute program.
+          <span className="md:hidden">Tap the green <strong>Run</strong> button above to execute program.</span>
+          <span className="hidden md:inline">
+            Press <kbd className="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-[#172033] border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-[#F8FAFC] font-mono text-[11px] shadow-xs">Ctrl+Enter</kbd> or click Run to execute program.
+          </span>
         </p>
       </div>
     );
