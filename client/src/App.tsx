@@ -29,7 +29,6 @@ import {
   Maximize2,
   Minimize2,
   BookOpen,
-  FolderGit2,
   Cpu,
   ChevronRight,
   Info
@@ -336,77 +335,77 @@ export default function App() {
   }, [project, stdin]); // eslint-disable-line
 
   return (
-    <div className="flex flex-col h-screen w-screen overflow-hidden bg-zinc-950 text-zinc-100 select-none">
+    <div className="flex flex-col h-screen w-screen overflow-hidden bg-slate-50 dark:bg-[#0b0f19] text-slate-800 dark:text-slate-100 select-none ambient-glow">
       {/* =========================================================================
           TOP NAVBAR
          ========================================================================= */}
-      <header className="h-14 border-b border-zinc-800/80 bg-zinc-900/90 backdrop-blur-md px-4 flex items-center justify-between shrink-0 z-30">
+      <header className="h-14 border-b border-slate-200 dark:border-slate-800/80 bg-white/90 dark:bg-[#111827]/90 backdrop-blur-md px-4 flex items-center justify-between shrink-0 z-30 shadow-2xs">
         {/* Left: Brand & Program Name */}
         <div className="flex items-center gap-3">
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/80 transition-colors"
+            className="p-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-colors cursor-pointer"
             title={sidebarOpen ? "Collapse sidebar" : "Expand sidebar"}
           >
             {sidebarOpen ? <PanelLeftClose size={18} /> : <PanelLeftOpen size={18} />}
           </button>
 
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400 shadow-sm shadow-indigo-500/10">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500/20 to-purple-500/20 border border-indigo-500/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shadow-sm shadow-indigo-500/10">
               <Code2 size={18} />
             </div>
             <div className="flex items-baseline gap-1.5">
-              <span className="font-bold text-sm tracking-tight text-zinc-100">polycompile</span>
-              <span className="text-[10px] font-extrabold uppercase px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 tracking-wider">
+              <span className="font-extrabold text-sm tracking-tight text-slate-900 dark:text-slate-100">polycompile</span>
+              <span className="text-[10px] font-extrabold uppercase px-1.5 py-0.2 rounded bg-emerald-50 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/30 tracking-wider">
                 PRO
               </span>
             </div>
           </div>
 
-          <div className="hidden sm:block h-4 w-px bg-zinc-800" />
+          <div className="hidden sm:block h-4 w-px bg-slate-200 dark:bg-slate-800" />
 
           {/* Program Name Input */}
-          <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-zinc-800/40 border border-zinc-800 hover:border-zinc-700 transition-colors">
-            <FileCode size={13} className="text-zinc-500" />
+          <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 hover:border-slate-300 dark:hover:border-slate-600 transition-colors">
+            <FileCode size={13} className="text-slate-400 dark:text-slate-500" />
             <input
               value={project.name}
               onChange={(e) => setProject((p) => ({ ...p, name: e.target.value }))}
               aria-label="Program name"
-              className="bg-transparent text-xs font-medium text-zinc-200 outline-none w-32 md:w-44 truncate"
+              className="bg-transparent text-xs font-semibold text-slate-800 dark:text-slate-200 outline-none w-32 md:w-44 truncate"
               title="Click to rename program"
             />
           </div>
         </div>
 
         {/* Center: System Status Badges */}
-        <div className="hidden lg:flex items-center gap-3 text-xs text-zinc-400 font-mono">
-          <div className="flex items-center gap-1.5 bg-zinc-800/50 px-2.5 py-1 rounded-full border border-zinc-700/50">
+        <div className="hidden lg:flex items-center gap-2.5 text-xs text-slate-500 dark:text-slate-400 font-mono">
+          <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800/60 px-2.5 py-1 rounded-full border border-slate-200 dark:border-slate-700/60">
             <span
               className={`w-2 h-2 rounded-full ${
-                health ? "bg-emerald-400 shadow-[0_0_8px_#10b981]" : "bg-rose-500"
+                health ? "bg-emerald-500 dark:bg-emerald-400 shadow-[0_0_8px_#10b981]" : "bg-rose-500"
               }`}
             />
-            <span className="text-[11px] text-zinc-300">
+            <span className="text-[11px] text-slate-700 dark:text-slate-300">
               {health ? "Backend Live" : "Connecting..."}
             </span>
           </div>
 
-          <div className="flex items-center gap-1.5 bg-zinc-800/50 px-2.5 py-1 rounded-full border border-zinc-700/50">
+          <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800/60 px-2.5 py-1 rounded-full border border-slate-200 dark:border-slate-700/60">
             <span
               className={`w-2 h-2 rounded-full ${
                 currentLangInfo?.runtimeAvailable !== false
-                  ? "bg-emerald-400 shadow-[0_0_8px_#10b981]"
+                  ? "bg-emerald-500 dark:bg-emerald-400 shadow-[0_0_8px_#10b981]"
                   : "bg-amber-400"
               }`}
             />
-            <span className="text-[11px] text-zinc-300">
+            <span className="text-[11px] text-slate-700 dark:text-slate-300 truncate max-w-[220px]">
               Judge0 Sandbox: {currentLangInfo?.resolvedVersion ?? currentLangDef.displayName}
             </span>
           </div>
 
           {health?.geminiConfigured && (
-            <div className="flex items-center gap-1.5 bg-indigo-950/40 px-2.5 py-1 rounded-full border border-indigo-800/50 text-indigo-300">
-              <Sparkles size={11} className="text-indigo-400" />
+            <div className="flex items-center gap-1.5 bg-indigo-50 dark:bg-indigo-950/40 px-2.5 py-1 rounded-full border border-indigo-200 dark:border-indigo-800/50 text-indigo-700 dark:text-indigo-300">
+              <Sparkles size={11} className="text-indigo-600 dark:text-indigo-400" />
               <span className="text-[11px]">Gemini Ready</span>
             </div>
           )}
@@ -418,7 +417,7 @@ export default function App() {
           {running ? (
             <button
               onClick={stopCode}
-              className="flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-medium text-xs shadow-lg shadow-rose-600/20 transition-all cursor-pointer"
+              className="flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-semibold text-xs shadow-md shadow-rose-600/25 transition-all cursor-pointer"
             >
               <Square size={13} fill="currentColor" />
               <span>Stop ({(elapsedMs / 1000).toFixed(1)}s)</span>
@@ -426,7 +425,7 @@ export default function App() {
           ) : (
             <button
               onClick={runCode}
-              className="flex items-center gap-2 px-4 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs shadow-lg shadow-emerald-600/25 transition-all glow-emerald cursor-pointer group"
+              className="flex items-center gap-2 px-4 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs shadow-md shadow-emerald-600/30 transition-all glow-emerald cursor-pointer group"
             >
               <Play size={13} fill="currentColor" className="group-hover:scale-110 transition-transform" />
               <span>Run</span>
@@ -436,12 +435,12 @@ export default function App() {
             </button>
           )}
 
-          <div className="h-4 w-px bg-zinc-800 mx-1" />
+          <div className="h-4 w-px bg-slate-200 dark:bg-slate-800 mx-1" />
 
           {/* Quick Tools */}
           <button
             onClick={formatDocument}
-            className="hidden sm:flex items-center gap-1 p-1.5 rounded-lg text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/80 transition-colors text-xs"
+            className="hidden sm:flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-colors text-xs font-medium cursor-pointer"
             title="Auto-format code (Monaco TS)"
           >
             Format
@@ -452,7 +451,7 @@ export default function App() {
               saveProjects([project, ...projects.filter((p) => p.id !== project.id)]);
               showToast("Program state saved to browser storage.", "success");
             }}
-            className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/80 transition-colors"
+            className="p-1.5 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-colors cursor-pointer"
             title="Save to local storage"
           >
             <Save size={16} />
@@ -460,7 +459,7 @@ export default function App() {
 
           <button
             onClick={() => setSplitVertical(!splitVertical)}
-            className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/80 transition-colors hidden md:block"
+            className="p-1.5 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-colors hidden md:block cursor-pointer"
             title={splitVertical ? "Split side-by-side" : "Split top-bottom"}
           >
             {splitVertical ? <Columns size={16} /> : <SplitSquareVertical size={16} />}
@@ -470,15 +469,15 @@ export default function App() {
             onClick={() =>
               setSettings((s) => ({ ...s, theme: s.theme === "dark" ? "light" : "dark" }))
             }
-            className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/80 transition-colors"
+            className="p-1.5 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-colors cursor-pointer"
             title={`Switch to ${settings.theme === "dark" ? "light" : "dark"} mode`}
           >
-            {settings.theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
+            {settings.theme === "dark" ? <Sun size={16} className="text-amber-400" /> : <Moon size={16} className="text-indigo-600" />}
           </button>
 
           <button
             onClick={() => setModalMode("shortcuts")}
-            className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/80 transition-colors"
+            className="p-1.5 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-colors cursor-pointer"
             title="Keyboard shortcuts (?)"
           >
             <HelpCircle size={16} />
@@ -489,8 +488,8 @@ export default function App() {
       {/* =========================================================================
           LANGUAGE SELECTOR STRIP
          ========================================================================= */}
-      <div className="h-10 border-b border-zinc-800/60 bg-zinc-900/40 px-3 flex items-center gap-1 overflow-x-auto shrink-0 select-none text-xs">
-        <span className="text-[10px] uppercase font-mono tracking-wider text-zinc-500 px-2 shrink-0">
+      <div className="h-10 border-b border-slate-200 dark:border-slate-800/70 bg-slate-100/70 dark:bg-[#111827]/50 px-3 flex items-center gap-1 overflow-x-auto shrink-0 select-none text-xs">
+        <span className="text-[10px] uppercase font-mono tracking-wider text-slate-500 px-2 shrink-0 font-bold">
           Medium:
         </span>
         {langInfos.map((l) => {
@@ -499,15 +498,15 @@ export default function App() {
             <button
               key={l.id}
               onClick={() => switchLanguage(l.id)}
-              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium shrink-0 transition-all cursor-pointer ${
+              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold shrink-0 transition-all cursor-pointer ${
                 isSelected
-                  ? "bg-indigo-600 text-white shadow-sm shadow-indigo-600/30"
-                  : "text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/60"
+                  ? "bg-indigo-600 text-white shadow-xs shadow-indigo-600/30"
+                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-white dark:hover:bg-slate-800/70"
               }`}
             >
               <span>{l.displayName}</span>
               {l.runtimeAvailable === true && (
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 dark:bg-emerald-400" />
               )}
             </button>
           );
@@ -520,35 +519,35 @@ export default function App() {
       <div className="flex-1 flex overflow-hidden">
         {/* SIDEBAR */}
         {sidebarOpen && (
-          <aside className="w-64 border-r border-zinc-800/80 bg-zinc-900/50 flex flex-col shrink-0 select-none">
+          <aside className="w-64 border-r border-slate-200 dark:border-slate-800/80 bg-white dark:bg-[#0f172a]/60 flex flex-col shrink-0 select-none">
             {/* Sidebar Tab Header */}
-            <div className="flex border-b border-zinc-800/80 p-1 bg-zinc-900/80 text-xs">
+            <div className="flex border-b border-slate-200 dark:border-slate-800/80 p-1 bg-slate-50 dark:bg-[#111827]/80 text-xs">
               <button
                 onClick={() => setSidebarTab("files")}
-                className={`flex-1 py-1.5 rounded-md font-medium text-center transition-colors ${
+                className={`flex-1 py-1.5 rounded-md font-semibold text-center transition-colors cursor-pointer ${
                   sidebarTab === "files"
-                    ? "bg-zinc-800 text-zinc-100 shadow-sm"
-                    : "text-zinc-400 hover:text-zinc-200"
+                    ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-2xs border border-slate-200 dark:border-slate-700"
+                    : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
                 }`}
               >
                 Files
               </button>
               <button
                 onClick={() => setSidebarTab("projects")}
-                className={`flex-1 py-1.5 rounded-md font-medium text-center transition-colors ${
+                className={`flex-1 py-1.5 rounded-md font-semibold text-center transition-colors cursor-pointer ${
                   sidebarTab === "projects"
-                    ? "bg-zinc-800 text-zinc-100 shadow-sm"
-                    : "text-zinc-400 hover:text-zinc-200"
+                    ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-2xs border border-slate-200 dark:border-slate-700"
+                    : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
                 }`}
               >
                 Programs
               </button>
               <button
                 onClick={() => setSidebarTab("snippets")}
-                className={`flex-1 py-1.5 rounded-md font-medium text-center transition-colors ${
+                className={`flex-1 py-1.5 rounded-md font-semibold text-center transition-colors cursor-pointer ${
                   sidebarTab === "snippets"
-                    ? "bg-zinc-800 text-zinc-100 shadow-sm"
-                    : "text-zinc-400 hover:text-zinc-200"
+                    ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-2xs border border-slate-200 dark:border-slate-700"
+                    : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
                 }`}
               >
                 Library
@@ -560,7 +559,7 @@ export default function App() {
               {sidebarTab === "files" && (
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-mono uppercase text-zinc-500 tracking-wider">
+                    <span className="text-[10px] font-mono uppercase text-slate-500 tracking-wider font-bold">
                       Source Files
                     </span>
                     <button
@@ -568,7 +567,7 @@ export default function App() {
                         setModalInput(`module.${currentLangDef.extension}`);
                         setModalMode("newFile");
                       }}
-                      className="text-zinc-400 hover:text-indigo-400 text-xs flex items-center gap-1"
+                      className="text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 text-xs flex items-center gap-1 font-semibold cursor-pointer"
                     >
                       <Plus size={13} /> Add
                     </button>
@@ -580,13 +579,13 @@ export default function App() {
                         key={i}
                         className={`group flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-mono transition-colors cursor-pointer ${
                           i === activeFile
-                            ? "bg-indigo-600/15 text-indigo-300 border border-indigo-500/30 font-semibold"
-                            : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50"
+                            ? "bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-500/30 font-semibold shadow-2xs"
+                            : "text-slate-700 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/50"
                         }`}
                         onClick={() => setActiveFile(i)}
                       >
                         <div className="flex items-center gap-2 truncate">
-                          <FileCode size={14} className={i === activeFile ? "text-indigo-400" : "text-zinc-500"} />
+                          <FileCode size={14} className={i === activeFile ? "text-indigo-600 dark:text-indigo-400" : "text-slate-400 dark:text-slate-500"} />
                           <span className="truncate">{file.name}</span>
                         </div>
 
@@ -597,7 +596,7 @@ export default function App() {
                               setModalInput(file.name);
                               setModalMode("renameFile");
                             }}
-                            className="p-1 hover:text-zinc-100 rounded"
+                            className="p-1 hover:text-slate-900 dark:hover:text-slate-100 rounded"
                             title="Rename file"
                           >
                             <Edit2 size={12} />
@@ -613,7 +612,7 @@ export default function App() {
                                 setActiveFile(0);
                                 showToast(`Deleted ${file.name}`, "info");
                               }}
-                              className="p-1 hover:text-rose-400 rounded"
+                              className="p-1 hover:text-rose-600 dark:hover:text-rose-400 rounded"
                               title="Delete file"
                             >
                               <Trash2 size={12} />
@@ -629,12 +628,12 @@ export default function App() {
               {sidebarTab === "projects" && (
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-mono uppercase text-zinc-500 tracking-wider">
+                    <span className="text-[10px] font-mono uppercase text-slate-500 tracking-wider font-bold">
                       Saved Programs
                     </span>
                     <button
                       onClick={createNewProject}
-                      className="text-xs text-indigo-400 hover:text-indigo-300 flex items-center gap-1 font-medium"
+                      className="text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 flex items-center gap-1 font-semibold cursor-pointer"
                     >
                       <Plus size={13} /> New
                     </button>
@@ -646,8 +645,8 @@ export default function App() {
                         key={p.id}
                         className={`group flex items-center justify-between p-2 rounded-lg text-xs transition-colors cursor-pointer ${
                           p.id === project.id
-                            ? "bg-zinc-800 text-zinc-100 border border-zinc-700/80 font-medium"
-                            : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40"
+                            ? "bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 border border-slate-200 dark:border-slate-700/80 font-semibold shadow-2xs"
+                            : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40"
                         }`}
                         onClick={() => {
                           setProject(p);
@@ -657,7 +656,7 @@ export default function App() {
                       >
                         <div className="truncate">
                           <p className="truncate">{p.name}</p>
-                          <span className="text-[10px] font-mono text-zinc-500 uppercase">
+                          <span className="text-[10px] font-mono text-slate-400 dark:text-slate-500 uppercase">
                             {p.language} · {new Date(p.updatedAt).toLocaleDateString()}
                           </span>
                         </div>
@@ -672,7 +671,7 @@ export default function App() {
                               if (p.id === project.id && rest[0]) setProject(rest[0]);
                               showToast(`Deleted "${p.name}"`, "info");
                             }}
-                            className="opacity-0 group-hover:opacity-100 p-1 hover:text-rose-400 transition-opacity"
+                            className="opacity-0 group-hover:opacity-100 p-1 hover:text-rose-600 dark:hover:text-rose-400 transition-opacity"
                             title="Delete program"
                           >
                             <Trash2 size={13} />
@@ -686,7 +685,7 @@ export default function App() {
 
               {sidebarTab === "snippets" && (
                 <div className="space-y-3">
-                  <span className="text-[10px] font-mono uppercase text-zinc-500 tracking-wider">
+                  <span className="text-[10px] font-mono uppercase text-slate-500 tracking-wider font-bold">
                     Quick Start Templates
                   </span>
 
@@ -695,10 +694,10 @@ export default function App() {
                       setCode(currentLangDef.starterCode);
                       showToast(`Loaded ${currentLangDef.displayName} starter template.`, "success");
                     }}
-                    className="w-full text-left p-2.5 rounded-lg bg-zinc-800/40 hover:bg-zinc-800/80 border border-zinc-800 hover:border-zinc-700 transition-all text-xs"
+                    className="w-full text-left p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/40 hover:bg-slate-100 dark:hover:bg-slate-800/80 border border-slate-200 dark:border-slate-800 hover:border-indigo-300 dark:hover:border-slate-700 transition-all text-xs cursor-pointer shadow-2xs"
                   >
-                    <p className="font-semibold text-zinc-200">Default Starter Code</p>
-                    <p className="text-[11px] text-zinc-500 mt-0.5">
+                    <p className="font-semibold text-slate-900 dark:text-slate-200">Default Starter Code</p>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
                       Standard hello world and looping template for {currentLangDef.displayName}.
                     </p>
                   </button>
@@ -710,10 +709,10 @@ export default function App() {
                         setCode(snip.code);
                         showToast(`Loaded "${snip.name}".`, "success");
                       }}
-                      className="w-full text-left p-2.5 rounded-lg bg-zinc-800/40 hover:bg-zinc-800/80 border border-zinc-800 hover:border-zinc-700 transition-all text-xs"
+                      className="w-full text-left p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/40 hover:bg-slate-100 dark:hover:bg-slate-800/80 border border-slate-200 dark:border-slate-800 hover:border-indigo-300 dark:hover:border-slate-700 transition-all text-xs cursor-pointer shadow-2xs"
                     >
-                      <p className="font-semibold text-zinc-200">{snip.name}</p>
-                      <p className="text-[11px] text-zinc-500 mt-0.5 leading-normal">{snip.desc}</p>
+                      <p className="font-semibold text-slate-900 dark:text-slate-200">{snip.name}</p>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 leading-normal">{snip.desc}</p>
                     </button>
                   ))}
                 </div>
@@ -721,16 +720,16 @@ export default function App() {
             </div>
 
             {/* Sidebar Footer: Import / Export */}
-            <div className="p-3 border-t border-zinc-800/80 flex items-center justify-between text-xs text-zinc-400 bg-zinc-900/80">
+            <div className="p-3 border-t border-slate-200 dark:border-slate-800/80 flex items-center justify-between text-xs text-slate-600 dark:text-slate-400 bg-slate-50/80 dark:bg-[#0f172a]/80">
               <button
                 onClick={exportProject}
-                className="flex items-center gap-1.5 hover:text-zinc-100 transition-colors"
+                className="flex items-center gap-1.5 hover:text-slate-900 dark:hover:text-slate-100 transition-colors font-medium cursor-pointer"
                 title="Export this program as JSON"
               >
                 <FileDown size={14} /> Export
               </button>
 
-              <label className="flex items-center gap-1.5 hover:text-zinc-100 transition-colors cursor-pointer">
+              <label className="flex items-center gap-1.5 hover:text-slate-900 dark:hover:text-slate-100 transition-colors cursor-pointer font-medium">
                 <Upload size={14} /> Import
                 <input
                   type="file"
@@ -747,37 +746,37 @@ export default function App() {
         <div className={`flex-1 flex ${splitVertical ? "flex-col" : "flex-row"} overflow-hidden`}>
           {/* EDITOR STAGE */}
           <div
-            className={`flex flex-col bg-zinc-950 overflow-hidden ${
+            className={`flex flex-col bg-white dark:bg-[#0b0f19] overflow-hidden ${
               isFullscreenOutput ? "hidden" : "flex-1"
             }`}
           >
             {/* Editor Sub-Header / Tab Bar */}
-            <div className="h-9 border-b border-zinc-800/80 bg-zinc-900/60 px-3 flex items-center justify-between shrink-0 text-xs text-zinc-400">
+            <div className="h-9 border-b border-slate-200 dark:border-slate-800/80 bg-slate-50/90 dark:bg-[#111827]/70 px-3 flex items-center justify-between shrink-0 text-xs text-slate-600 dark:text-slate-400">
               <div className="flex items-center gap-2">
-                <span className="flex items-center gap-1.5 px-2 py-0.5 rounded bg-zinc-800 text-zinc-200 font-mono text-[11px]">
-                  <FileCode size={12} className="text-indigo-400" />
+                <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-200 font-mono text-[11px] border border-slate-200 dark:border-slate-700/60 shadow-2xs">
+                  <FileCode size={12} className="text-indigo-600 dark:text-indigo-400" />
                   {project.files[activeFile]?.name}
                 </span>
-                <span className="text-[11px] text-zinc-500">
+                <span className="text-[11px] text-slate-500">
                   {currentLangDef.displayName} ({currentLangDef.extension})
                 </span>
               </div>
 
               <div className="flex items-center gap-3">
                 {/* Font Size Adjuster */}
-                <div className="flex items-center gap-1 text-[11px] font-mono text-zinc-400">
+                <div className="flex items-center gap-1 text-[11px] font-mono text-slate-600 dark:text-slate-400">
                   <span>Font:</span>
                   <button
                     onClick={() => setSettings((s) => ({ ...s, fontSize: Math.max(11, s.fontSize - 1) }))}
-                    className="w-5 h-5 flex items-center justify-center rounded hover:bg-zinc-800 hover:text-zinc-100"
+                    className="w-5 h-5 flex items-center justify-center rounded hover:bg-slate-200 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100 cursor-pointer"
                     title="Decrease font size"
                   >
                     -
                   </button>
-                  <span className="px-1">{settings.fontSize}</span>
+                  <span className="px-1 font-bold">{settings.fontSize}</span>
                   <button
                     onClick={() => setSettings((s) => ({ ...s, fontSize: Math.min(24, s.fontSize + 1) }))}
-                    className="w-5 h-5 flex items-center justify-center rounded hover:bg-zinc-800 hover:text-zinc-100"
+                    className="w-5 h-5 flex items-center justify-center rounded hover:bg-slate-200 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100 cursor-pointer"
                     title="Increase font size"
                   >
                     +
@@ -789,7 +788,7 @@ export default function App() {
                     navigator.clipboard?.writeText(currentCode);
                     showToast("Code copied to clipboard.", "success");
                   }}
-                  className="p-1 hover:text-zinc-100 transition-colors"
+                  className="p-1 hover:text-slate-900 dark:hover:text-slate-100 transition-colors cursor-pointer"
                   title="Copy code"
                 >
                   <Copy size={14} />
@@ -797,7 +796,7 @@ export default function App() {
 
                 <button
                   onClick={() => downloadFile(currentCode, project.files[activeFile]?.name ?? currentLangDef.fileName)}
-                  className="p-1 hover:text-zinc-100 transition-colors"
+                  className="p-1 hover:text-slate-900 dark:hover:text-slate-100 transition-colors cursor-pointer"
                   title="Download file"
                 >
                   <Download size={14} />
@@ -834,31 +833,31 @@ export default function App() {
 
           {/* SPLIT CONSOLE & COPILOT STAGE */}
           <div
-            className={`flex flex-col border-l border-zinc-800/80 bg-zinc-900/40 overflow-hidden ${
+            className={`flex flex-col border-l border-slate-200 dark:border-slate-800/80 bg-white dark:bg-[#0c101a]/70 overflow-hidden ${
               isFullscreenOutput ? "flex-1" : splitVertical ? "h-1/2 border-t border-l-0" : "w-full md:w-[460px] lg:w-[520px]"
             }`}
           >
             {/* Console Tabs */}
-            <div className="h-9 border-b border-zinc-800/80 bg-zinc-900/90 px-3 flex items-center justify-between shrink-0 select-none text-xs">
+            <div className="h-9 border-b border-slate-200 dark:border-slate-800/80 bg-slate-50/90 dark:bg-[#111827]/90 px-3 flex items-center justify-between shrink-0 select-none text-xs">
               <div className="flex items-center gap-1 overflow-x-auto">
                 <button
                   onClick={() => setRightTab("output")}
-                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md transition-colors ${
+                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md transition-colors cursor-pointer ${
                     rightTab === "output"
-                      ? "bg-zinc-800 text-zinc-100 font-semibold"
-                      : "text-zinc-400 hover:text-zinc-200"
+                      ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 font-bold shadow-2xs border border-slate-200 dark:border-slate-700"
+                      : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
                   }`}
                 >
-                  <Terminal size={13} className="text-emerald-400" />
+                  <Terminal size={13} className="text-emerald-600 dark:text-emerald-400" />
                   <span>Output</span>
                 </button>
 
                 <button
                   onClick={() => setRightTab("stdin")}
-                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md transition-colors ${
+                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md transition-colors cursor-pointer ${
                     rightTab === "stdin"
-                      ? "bg-zinc-800 text-zinc-100 font-semibold"
-                      : "text-zinc-400 hover:text-zinc-200"
+                      ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 font-bold shadow-2xs border border-slate-200 dark:border-slate-700"
+                      : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
                   }`}
                 >
                   <span>Stdin</span>
@@ -866,10 +865,10 @@ export default function App() {
 
                 <button
                   onClick={() => setRightTab("ai")}
-                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md transition-colors ${
+                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md transition-colors cursor-pointer ${
                     rightTab === "ai"
-                      ? "bg-indigo-600/30 text-indigo-300 font-semibold border border-indigo-500/40"
-                      : "text-indigo-400 hover:text-indigo-300"
+                      ? "bg-indigo-50 dark:bg-indigo-600/30 text-indigo-700 dark:text-indigo-300 font-bold border border-indigo-200 dark:border-indigo-500/40 shadow-2xs"
+                      : "text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300"
                   }`}
                 >
                   <Sparkles size={13} />
@@ -878,25 +877,25 @@ export default function App() {
 
                 <button
                   onClick={() => setRightTab("visualizer")}
-                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md transition-colors ${
+                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md transition-colors cursor-pointer ${
                     rightTab === "visualizer"
-                      ? "bg-zinc-800 text-zinc-100 font-semibold"
-                      : "text-zinc-400 hover:text-zinc-200"
+                      ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 font-bold shadow-2xs border border-slate-200 dark:border-slate-700"
+                      : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
                   }`}
                 >
-                  <Layers size={13} className="text-amber-400" />
+                  <Layers size={13} className="text-amber-500 dark:text-amber-400" />
                   <span>Visualizer</span>
                 </button>
 
                 <button
                   onClick={() => setRightTab("provider")}
-                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md transition-colors ${
+                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md transition-colors cursor-pointer ${
                     rightTab === "provider"
-                      ? "bg-zinc-800 text-zinc-100 font-semibold"
-                      : "text-zinc-400 hover:text-zinc-200"
+                      ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 font-bold shadow-2xs border border-slate-200 dark:border-slate-700"
+                      : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
                   }`}
                 >
-                  <Cpu size={13} className="text-zinc-400" />
+                  <Cpu size={13} className="text-slate-500 dark:text-slate-400" />
                   <span>Engine</span>
                 </button>
               </div>
@@ -904,7 +903,7 @@ export default function App() {
               {/* Maximize / Minimize output toggle */}
               <button
                 onClick={() => setIsFullscreenOutput(!isFullscreenOutput)}
-                className="p-1 text-zinc-400 hover:text-zinc-100 rounded"
+                className="p-1 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 rounded cursor-pointer"
                 title={isFullscreenOutput ? "Restore split view" : "Maximize console"}
               >
                 {isFullscreenOutput ? <Minimize2 size={13} /> : <Maximize2 size={13} />}
@@ -913,16 +912,16 @@ export default function App() {
 
             {/* Error banner if execution failed */}
             {runError && (
-              <div className="p-3 bg-rose-950/40 border-b border-rose-900/60 text-xs text-rose-300 flex items-center justify-between">
+              <div className="p-3 bg-rose-50 dark:bg-rose-950/40 border-b border-rose-200 dark:border-rose-900/60 text-xs text-rose-700 dark:text-rose-300 flex items-center justify-between">
                 <span>{runError}</span>
-                <button onClick={runCode} className="underline hover:text-rose-100 font-medium ml-2">
+                <button onClick={runCode} className="underline hover:text-rose-900 dark:hover:text-rose-100 font-semibold ml-2 cursor-pointer">
                   Retry
                 </button>
               </div>
             )}
 
             {/* Console Tab Viewports */}
-            <div className="flex-1 overflow-auto bg-zinc-950/40">
+            <div className="flex-1 overflow-auto bg-slate-50/50 dark:bg-slate-950/40">
               {rightTab === "output" && (
                 <OutputPanel
                   result={result}
@@ -937,13 +936,13 @@ export default function App() {
 
               {rightTab === "stdin" && (
                 <div className="p-4 space-y-3">
-                  <div className="flex items-center justify-between text-xs text-zinc-400">
-                    <span className="font-semibold text-zinc-200 uppercase tracking-wider text-[11px]">
+                  <div className="flex items-center justify-between text-xs text-slate-600 dark:text-slate-400">
+                    <span className="font-bold text-slate-900 dark:text-slate-200 uppercase tracking-wider text-[11px]">
                       Custom Standard Input (stdin)
                     </span>
                     <button
                       onClick={() => setStdin("")}
-                      className="text-zinc-500 hover:text-zinc-300 text-[11px]"
+                      className="text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 text-[11px] cursor-pointer"
                     >
                       Clear
                     </button>
@@ -953,9 +952,9 @@ export default function App() {
                     onChange={(e) => setStdin(e.target.value)}
                     rows={8}
                     placeholder="Provide line-by-line inputs for interactive functions (input, cin, Scanner)..."
-                    className="w-full p-3 font-mono text-xs rounded-lg bg-zinc-900/80 border border-zinc-800 text-zinc-200 focus:outline-none focus:border-indigo-500/60 resize-y"
+                    className="w-full p-3 font-mono text-xs rounded-xl bg-white dark:bg-slate-900/80 border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-slate-200 focus:outline-none focus:border-indigo-500 shadow-2xs resize-y"
                   />
-                  <p className="text-[11px] text-zinc-500 leading-normal">
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-normal">
                     Stdin is piped directly into your program's execution process at invocation.
                   </p>
                 </div>
@@ -970,38 +969,38 @@ export default function App() {
               )}
 
               {rightTab === "provider" && (
-                <div className="p-4 space-y-4 text-xs text-zinc-300">
-                  <div className="p-3 rounded-lg bg-zinc-900/80 border border-zinc-800 space-y-2">
-                    <p className="font-semibold text-zinc-100 text-sm">Judge0 CE Execution Engine</p>
-                    <p className="text-zinc-400 leading-relaxed text-[11px]">
+                <div className="p-4 space-y-4 text-xs text-slate-700 dark:text-slate-300">
+                  <div className="p-3.5 rounded-xl bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 space-y-2 shadow-2xs">
+                    <p className="font-bold text-slate-900 dark:text-slate-100 text-sm">Judge0 CE Execution Engine</p>
+                    <p className="text-slate-500 dark:text-slate-400 leading-relaxed text-[11px]">
                       PolyCompile Pro runs every execution through an isolated, sandboxed Judge0 CE instance.
                       No code is executed inside your browser or the local Express server.
                     </p>
                   </div>
 
                   <div className="grid grid-cols-2 gap-2 font-mono text-[11px]">
-                    <div className="p-2.5 rounded bg-zinc-900/60 border border-zinc-800">
-                      <span className="text-zinc-500 block">Selected Language</span>
-                      <span className="text-indigo-300 font-semibold">{currentLangDef.displayName}</span>
+                    <div className="p-2.5 rounded-lg bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 shadow-2xs">
+                      <span className="text-slate-400 dark:text-slate-500 block">Selected Language</span>
+                      <span className="text-indigo-600 dark:text-indigo-300 font-bold">{currentLangDef.displayName}</span>
                     </div>
-                    <div className="p-2.5 rounded bg-zinc-900/60 border border-zinc-800">
-                      <span className="text-zinc-500 block">Judge0 ID</span>
-                      <span className="text-indigo-300 font-semibold">{currentLangDef.judge0LanguageId}</span>
+                    <div className="p-2.5 rounded-lg bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 shadow-2xs">
+                      <span className="text-slate-400 dark:text-slate-500 block">Judge0 ID</span>
+                      <span className="text-indigo-600 dark:text-indigo-300 font-bold">{currentLangDef.judge0LanguageId}</span>
                     </div>
-                    <div className="p-2.5 rounded bg-zinc-900/60 border border-zinc-800">
-                      <span className="text-zinc-500 block">CPU Time Limit</span>
-                      <span className="text-emerald-400 font-semibold">5.0 seconds</span>
+                    <div className="p-2.5 rounded-lg bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 shadow-2xs">
+                      <span className="text-slate-400 dark:text-slate-500 block">CPU Time Limit</span>
+                      <span className="text-emerald-600 dark:text-emerald-400 font-bold">5.0 seconds</span>
                     </div>
-                    <div className="p-2.5 rounded bg-zinc-900/60 border border-zinc-800">
-                      <span className="text-zinc-500 block">Max Memory</span>
-                      <span className="text-emerald-400 font-semibold">65,536 KB</span>
+                    <div className="p-2.5 rounded-lg bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 shadow-2xs">
+                      <span className="text-slate-400 dark:text-slate-500 block">Max Memory</span>
+                      <span className="text-emerald-600 dark:text-emerald-400 font-bold">65,536 KB</span>
                     </div>
                   </div>
 
                   {result && (
-                    <div className="p-3 rounded-lg bg-zinc-900/80 border border-zinc-800 space-y-1 font-mono text-[11px]">
-                      <p className="font-semibold text-zinc-200 mb-1">Last Run Metrics:</p>
-                      <p>Status: <span className="text-emerald-400">{result.status}</span></p>
+                    <div className="p-3.5 rounded-xl bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 space-y-1 font-mono text-[11px] shadow-2xs">
+                      <p className="font-bold text-slate-800 dark:text-slate-200 mb-1">Last Run Metrics:</p>
+                      <p>Status: <span className="text-emerald-600 dark:text-emerald-400 font-semibold">{result.status}</span></p>
                       <p>Exit code: {result.exitCode ?? "n/a"}</p>
                       <p>Duration: {result.durationMs} ms</p>
                       <p>CPU Time: {result.providerTimeSec ?? "n/a"} s</p>
@@ -1019,13 +1018,13 @@ export default function App() {
           MODALS & DIALOGS
          ========================================================================= */}
       {modalMode && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="w-full max-w-md bg-zinc-900 border border-zinc-800 rounded-xl p-5 shadow-2xl animate-modal space-y-4">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+          <div className="w-full max-w-md bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-2xl animate-modal space-y-4">
             {modalMode === "newFile" && (
               <>
                 <div className="flex items-center justify-between">
-                  <h3 className="font-semibold text-sm text-zinc-100">Add New File</h3>
-                  <button onClick={() => setModalMode(null)} className="text-zinc-400 hover:text-zinc-100">
+                  <h3 className="font-bold text-sm text-slate-900 dark:text-slate-100">Add New File</h3>
+                  <button onClick={() => setModalMode(null)} className="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 cursor-pointer">
                     <X size={16} />
                   </button>
                 </div>
@@ -1035,12 +1034,12 @@ export default function App() {
                   onChange={(e) => setModalInput(e.target.value)}
                   placeholder="e.g. helper.py"
                   autoFocus
-                  className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-lg text-xs font-mono text-zinc-100 outline-none focus:border-indigo-500"
+                  className="w-full px-3 py-2 bg-slate-50 dark:bg-[#0b0f19] border border-slate-300 dark:border-slate-800 rounded-xl text-xs font-mono text-slate-900 dark:text-slate-100 outline-none focus:border-indigo-500"
                 />
                 <div className="flex justify-end gap-2 text-xs">
                   <button
                     onClick={() => setModalMode(null)}
-                    className="px-3 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300"
+                    className="px-3.5 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold cursor-pointer"
                   >
                     Cancel
                   </button>
@@ -1056,7 +1055,7 @@ export default function App() {
                       }
                       setModalMode(null);
                     }}
-                    className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-medium"
+                    className="px-3.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-semibold cursor-pointer"
                   >
                     Create
                   </button>
@@ -1067,8 +1066,8 @@ export default function App() {
             {modalMode === "renameFile" && (
               <>
                 <div className="flex items-center justify-between">
-                  <h3 className="font-semibold text-sm text-zinc-100">Rename File</h3>
-                  <button onClick={() => setModalMode(null)} className="text-zinc-400 hover:text-zinc-100">
+                  <h3 className="font-bold text-sm text-slate-900 dark:text-slate-100">Rename File</h3>
+                  <button onClick={() => setModalMode(null)} className="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 cursor-pointer">
                     <X size={16} />
                   </button>
                 </div>
@@ -1077,12 +1076,12 @@ export default function App() {
                   value={modalInput}
                   onChange={(e) => setModalInput(e.target.value)}
                   autoFocus
-                  className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-lg text-xs font-mono text-zinc-100 outline-none focus:border-indigo-500"
+                  className="w-full px-3 py-2 bg-slate-50 dark:bg-[#0b0f19] border border-slate-300 dark:border-slate-800 rounded-xl text-xs font-mono text-slate-900 dark:text-slate-100 outline-none focus:border-indigo-500"
                 />
                 <div className="flex justify-end gap-2 text-xs">
                   <button
                     onClick={() => setModalMode(null)}
-                    className="px-3 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300"
+                    className="px-3.5 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold cursor-pointer"
                   >
                     Cancel
                   </button>
@@ -1099,7 +1098,7 @@ export default function App() {
                       }
                       setModalMode(null);
                     }}
-                    className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-medium"
+                    className="px-3.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-semibold cursor-pointer"
                   >
                     Rename
                   </button>
@@ -1110,34 +1109,34 @@ export default function App() {
             {modalMode === "shortcuts" && (
               <>
                 <div className="flex items-center justify-between">
-                  <h3 className="font-semibold text-sm text-zinc-100">Keyboard Shortcuts</h3>
-                  <button onClick={() => setModalMode(null)} className="text-zinc-400 hover:text-zinc-100">
+                  <h3 className="font-bold text-sm text-slate-900 dark:text-slate-100">Keyboard Shortcuts</h3>
+                  <button onClick={() => setModalMode(null)} className="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 cursor-pointer">
                     <X size={16} />
                   </button>
                 </div>
                 <div className="space-y-2 text-xs font-mono">
-                  <div className="flex items-center justify-between py-1.5 border-b border-zinc-800">
-                    <span className="text-zinc-400">Run Program</span>
-                    <kbd className="px-2 py-0.5 rounded bg-zinc-800 border border-zinc-700 text-zinc-200">
+                  <div className="flex items-center justify-between py-1.5 border-b border-slate-200 dark:border-slate-800">
+                    <span className="text-slate-600 dark:text-slate-400">Run Program</span>
+                    <kbd className="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 font-bold">
                       Ctrl + Enter
                     </kbd>
                   </div>
-                  <div className="flex items-center justify-between py-1.5 border-b border-zinc-800">
-                    <span className="text-zinc-400">Auto-Format Code</span>
-                    <kbd className="px-2 py-0.5 rounded bg-zinc-800 border border-zinc-700 text-zinc-200">
+                  <div className="flex items-center justify-between py-1.5 border-b border-slate-200 dark:border-slate-800">
+                    <span className="text-slate-600 dark:text-slate-400">Auto-Format Code</span>
+                    <kbd className="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 font-bold">
                       Shift + Alt + F
                     </kbd>
                   </div>
-                  <div className="flex items-center justify-between py-1.5 border-b border-zinc-800">
-                    <span className="text-zinc-400">Open Shortcuts Cheatsheet</span>
-                    <kbd className="px-2 py-0.5 rounded bg-zinc-800 border border-zinc-700 text-zinc-200">
+                  <div className="flex items-center justify-between py-1.5 border-b border-slate-200 dark:border-slate-800">
+                    <span className="text-slate-600 dark:text-slate-400">Open Shortcuts Cheatsheet</span>
+                    <kbd className="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 font-bold">
                       ?
                     </kbd>
                   </div>
                 </div>
                 <button
                   onClick={() => setModalMode(null)}
-                  className="w-full py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-xs font-medium text-zinc-200 mt-2"
+                  className="w-full py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-xs font-bold text-slate-800 dark:text-slate-200 mt-2 cursor-pointer transition-colors"
                 >
                   Close
                 </button>
@@ -1153,20 +1152,20 @@ export default function App() {
       {toast && (
         <div className="fixed bottom-5 right-5 z-50 animate-toast">
           <div
-            className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl border shadow-xl text-xs font-medium backdrop-blur-md ${
+            className={`flex items-center gap-2.5 px-4 py-2.5 rounded-xl border shadow-xl text-xs font-semibold backdrop-blur-md ${
               toast.type === "success"
-                ? "bg-emerald-950/80 border-emerald-800/80 text-emerald-200"
+                ? "bg-emerald-50 dark:bg-emerald-950/90 border-emerald-300 dark:border-emerald-800 text-emerald-900 dark:text-emerald-100"
                 : toast.type === "error"
-                ? "bg-rose-950/80 border-rose-800/80 text-rose-200"
-                : "bg-zinc-900/90 border-zinc-750 text-zinc-200"
+                ? "bg-rose-50 dark:bg-rose-950/90 border-rose-300 dark:border-rose-800 text-rose-900 dark:text-rose-100"
+                : "bg-white dark:bg-[#1e293b]/95 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100"
             }`}
           >
             {toast.type === "success" ? (
-              <Check size={14} className="text-emerald-400 shrink-0" />
+              <Check size={14} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
             ) : toast.type === "error" ? (
-              <X size={14} className="text-rose-400 shrink-0" />
+              <X size={14} className="text-rose-600 dark:text-rose-400 shrink-0" />
             ) : (
-              <Info size={14} className="text-indigo-400 shrink-0" />
+              <Info size={14} className="text-indigo-600 dark:text-indigo-400 shrink-0" />
             )}
             <span>{toast.msg}</span>
           </div>
