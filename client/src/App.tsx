@@ -771,9 +771,7 @@ export default function App() {
           </button>
 
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#6366F1]/20 to-[#22D3EE]/20 border border-[#6366F1]/30 flex items-center justify-center text-[#6366F1] dark:text-[#22D3EE] shadow-sm">
-              <Code2 size={18} />
-            </div>
+            <img src="/logo.png" alt="PolyCompile Pro logo" className="w-8 h-8 rounded-lg shadow-sm" />
             <div className="flex items-baseline gap-1">
               <span className="font-extrabold text-sm tracking-tight text-slate-900 dark:text-[#F8FAFC]">polycompile</span>
               <span className="text-[10px] font-extrabold uppercase px-1.5 py-0.2 rounded bg-[#22C55E]/15 text-[#22C55E] border border-[#22C55E]/30 tracking-wider">
