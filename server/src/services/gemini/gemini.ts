@@ -42,7 +42,7 @@ export function extractJson(text: string): unknown {
   if (start < 0 || end < 0) throw new AppError(502, "AI_MALFORMED_RESPONSE", "Gemini did not return the requested JSON structure.");
   try { return JSON.parse(raw.slice(start, end + 1)); } catch { throw new AppError(502, "AI_MALFORMED_RESPONSE", "Gemini returned invalid JSON."); }
 }
-const guard = "You are helping a student understand code. Be accurate and concise. Never claim code was executed or verified.";
+const guard = "You are helping a student understand code. Be accurate and concise. Never claim code was executed or verified. Keep every answer short and simple: at most about 6 short lines, in very simple everyday words, no jargon, no long paragraphs.";
 export const prompts = {
   explainError: (language: string, code: string, diagnostics: string) => `${guard}\nLanguage: ${language}\nDiagnostics:\n${diagnostics}\nCode:\n${code}\nReply in Markdown with sections: **What happened**, **Likely root cause**, **Suggested fix**, and a minimal corrected snippet in a fenced block if one is appropriate.`,
   explainCode: (language: string, code: string) => `${guard}\nExplain this ${language} code in Markdown: overall purpose, important variables/functions, execution flow, key language concepts, and potential edge cases.\nCode:\n${code}`,
