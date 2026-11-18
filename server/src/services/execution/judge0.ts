@@ -16,6 +16,34 @@ interface J0Language { id: number; name: string; }
 interface J0Result { stdout: string | null; stderr: string | null; compile_output: string | null; message: string | null; time: string | null; memory: number | null; exit_code: number | null; status: { id: number; description: string }; }
 let langCache: { at: number; langs: J0Language[] } | null = null;
 export function _clearJudge0Cache() { langCache = null; }
+
+// Minimal stored (uncompressed) ZIP writer + CRC32, used to send extra
+// project files to Judge0 as `additional_files` (Base64 ZIP). No deps.
+const CRC_TABLE = (() => { const t = new Int32Array(256); for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1; t[n] = c; } return t; })();
+function crc32(buf: Buffer): number { let c = 0xffffffff; for (let i = 0; i < buf.length; i++) c = CRC_TABLE[(c ^ buf[i]) & 0xff] ^ (c >>> 8); return (c ^ 0xffffffff) >>> 0; }
+export function buildStoredZip(files: { name: string; content: string }[]): Buffer {
+  const chunks: Buffer[] = []; const central: Buffer[] = []; let offset = 0;
+  for (const f of files) {
+    const nameBuf = Buffer.from(f.name, "utf8"); const data = Buffer.from(f.content, "utf8"); const crc = crc32(data);
+    const local = Buffer.alloc(30);
+    local.writeUInt32LE(0x04034b50, 0); local.writeUInt16LE(20, 4); local.writeUInt16LE(0x0800, 6); local.writeUInt16LE(0, 8);
+    local.writeUInt16LE(0, 10); local.writeUInt16LE(0x21, 12); // DOS time/date: 1980-01-01 is 0x21 date; keep fixed
+    local.writeUInt32LE(crc, 14); local.writeUInt32LE(data.length, 18); local.writeUInt32LE(data.length, 22);
+    local.writeUInt16LE(nameBuf.length, 26); local.writeUInt16LE(0, 28);
+    chunks.push(local, nameBuf, data);
+    const cd = Buffer.alloc(46);
+    cd.writeUInt32LE(0x02014b50, 0); cd.writeUInt16LE(20, 4); cd.writeUInt16LE(20, 6); cd.writeUInt16LE(0x0800, 8); cd.writeUInt16LE(0, 10);
+    cd.writeUInt16LE(0, 12); cd.writeUInt16LE(0x21, 14); cd.writeUInt32LE(crc, 16); cd.writeUInt32LE(data.length, 20); cd.writeUInt32LE(data.length, 24);
+    cd.writeUInt16LE(nameBuf.length, 28); cd.writeUInt32LE(offset, 42);
+    central.push(cd, nameBuf);
+    offset += local.length + nameBuf.length + data.length;
+  }
+  const cdBuf = Buffer.concat(central);
+  const eocd = Buffer.alloc(22);
+  eocd.writeUInt32LE(0x06054b50, 0); eocd.writeUInt16LE(files.length, 8); eocd.writeUInt16LE(files.length, 10);
+  eocd.writeUInt32LE(cdBuf.length, 12); eocd.writeUInt32LE(offset, 16);
+  return Buffer.concat([...chunks, cdBuf, eocd]);
+}
 const truncate = (s: string) => { const b = Buffer.byteLength(s, "utf8"); return b <= config.maxOutputBytes ? { text: s, truncated: false } : { text: Buffer.from(s, "utf8").subarray(0, config.maxOutputBytes).toString("utf8"), truncated: true }; };
 let active = 0; const waiters: Array<() => void> = [];
 async function acquire() { if (active < config.maxConcurrentExecutions) { active++; return; } await new Promise<void>(r => waiters.push(r)); active++; }
@@ -66,7 +94,21 @@ export async function executeCode(input: { language: string; code: string; stdin
   }
   if (Buffer.byteLength(input.code) > config.maxSourceBytes) throw new AppError(413, "SOURCE_TOO_LARGE", `Source exceeds the ${config.maxSourceBytes}-byte limit.`);
   if (Buffer.byteLength(input.stdin) > config.maxStdinBytes) throw new AppError(413, "STDIN_TOO_LARGE", `Input exceeds the ${config.maxStdinBytes}-byte limit.`);
-  if (input.files.length > 1) throw new AppError(400, "MULTI_FILE_UNSUPPORTED", "The Judge0 provider executes a single source file. Extra files were NOT submitted. Switch EXECUTION_PROVIDER to a (whitelisted/self-hosted) Piston instance for multi-file execution, or merge the files.");
+  // TypeScript on Judge0 compiles without @types/node, so bare `require` /
+  // `process` fail type-checking (TS2580) even though Node provides them at
+  // runtime. Prepend ambient declarations when the code uses them and does
+  // not already declare them.
+  let sourceCode = input.code;
+  if (def.id === "typescript" && /\brequire\s*\(|\bprocess\s*\.|\bBuffer\s*\(/.test(sourceCode) && !/declare\s+(const|var|function)\s+(require|process|Buffer)\b/.test(sourceCode)) {
+    sourceCode = "declare const require: any; declare const process: any; declare const module: any; declare const Buffer: any; declare const __dirname: string;\n" + sourceCode;
+  }
+  // Multi-file projects: the entry file stays in source_code; the remaining
+  // files go to Judge0 as an additional_files ZIP extracted beside it.
+  let additionalFiles: string | undefined;
+  if (input.files.length > 1) {
+    const extras = input.files.slice(1).filter(f => f.name && f.name !== input.files[0]?.name);
+    if (extras.length) additionalFiles = buildStoredZip(extras).toString("base64");
+  }
   const langs = await fetchJudge0Languages(fetchFn);
   if (!langs.some(l => l.id === def.judge0LanguageId)) throw new AppError(400, "RUNTIME_UNAVAILABLE", `${def.displayName} is not currently offered by the execution provider.`);
   await acquire(); const started = Date.now();
@@ -75,7 +117,7 @@ export async function executeCode(input: { language: string; code: string; stdin
   try {
     const res = await fetchFn(`${config.executionApiUrl}/submissions?base64_encoded=false&wait=true&fields=*`, {
       method: "POST", signal: ctrl.signal, headers: { "Content-Type": "application/json", Connection: "close", ...(config.executionApiKey ? { "X-Auth-Token": config.executionApiKey } : {}) },
-      body: JSON.stringify({ source_code: input.code, language_id: def.judge0LanguageId, stdin: input.stdin, enable_network: false, cpu_time_limit: 5, wall_time_limit: 10 }),
+      body: JSON.stringify({ source_code: sourceCode, language_id: def.judge0LanguageId, stdin: input.stdin, enable_network: false, cpu_time_limit: 5, wall_time_limit: 10, ...(additionalFiles ? { additional_files: additionalFiles } : {}) }),
     });
     if (res.status === 429) throw new AppError(429, "PROVIDER_RATE_LIMITED", "The execution provider is rate-limiting requests. Wait a few seconds and retry.");
     if (!res.ok) throw new AppError(502, "PROVIDER_ERROR", `The execution provider returned HTTP ${res.status}.`);

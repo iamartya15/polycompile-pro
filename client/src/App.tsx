@@ -914,11 +914,6 @@ export default function App() {
               aria-pressed={isSelected}
             >
               <span>{l.displayName}</span>
-              {l.supportsPreview ? (
-                <span className="text-[9px] px-1 rounded bg-[#22D3EE]/20 text-[#22D3EE] font-mono">LIVE</span>
-              ) : l.runtimeAvailable === true ? (
-                <span className="w-1.5 h-1.5 rounded-full bg-[#22C55E]" />
-              ) : null}
             </button>
           );
         })}
