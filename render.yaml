@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: polycompile-pro
+    env: node
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm run start -w @polycompile/server
+    envVars:
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: CLIENT_ORIGIN
+        sync: false
