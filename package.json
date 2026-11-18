@@ -1,0 +1,24 @@
+{
+  "name": "polycompile-pro",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "client",
+    "server",
+    "shared"
+  ],
+  "scripts": {
+    "dev": "npm run build -w @polycompile/shared && concurrently -n server,client -c blue,green \"npm run dev -w @polycompile/server\" \"npm run dev -w @polycompile/client\"",
+    "dev:host": "npm run build -w @polycompile/shared && concurrently -n server,client -c blue,green \"npm run dev -w @polycompile/server\" \"npm run dev -w @polycompile/client -- --host 0.0.0.0\"",
+    "build": "npm run build -w @polycompile/shared && npm run build -w @polycompile/server && npm run build -w @polycompile/client",
+    "typecheck": "npm run build -w @polycompile/shared && npm run typecheck -w @polycompile/server && npm run typecheck -w @polycompile/client",
+    "test": "npm run build -w @polycompile/shared && npm run test -w @polycompile/server && npm run test -w @polycompile/client",
+    "test:integration": "npm run test:integration -w @polycompile/server"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

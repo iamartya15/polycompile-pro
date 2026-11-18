@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" href="data:,">
+<title>PolyCompile — One Compiler for All Languages</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f6f5f2;--panel:#fff;--panel2:#fbfaf8;--line:#e8e2d9;--text:#171512;--muted:#6f6a61;--accent:#0f766e;--accent2:#f59e0b;--dark:#121212;--codebg:#101418}
+@media(prefers-color-scheme:dark){:root{--bg:#0e0f11;--panel:#16181d;--panel2:#1c1f26;--line:#262a33;--text:#f3f1eb;--muted:#9aa0ad;--accent:#2dd4bf;--accent2:#fbbf24}}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,sans-serif;background:var(--bg);color:var(--text)}
+a{color:inherit}
+.top{height:58px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;background:var(--panel);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:20}
+.logo{display:flex;gap:12px;align-items:center}.mark{width:36px;height:36px;background:var(--text);color:var(--bg);display:grid;place-items:center;font-family:JetBrains Mono,monospace;font-weight:800;border-radius:9px;letter-spacing:-1px}
+.logo b{font-size:18px;letter-spacing:-.02em}.logo span{display:block;font-size:11px;color:var(--muted);font-weight:500;letter-spacing:.08em;text-transform:uppercase}
+.top-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.btn{border:1px solid var(--line);background:var(--panel);padding:9px 13px;border-radius:999px;font-weight:600;font-size:13px;cursor:pointer}.btn.primary{background:var(--accent);color:#fff;border-color:transparent;padding:10px 18px}.btn.dark{background:var(--text);color:var(--bg)}
+.hero{max-width:1280px;margin:0 auto;padding:22px 18px 10px;display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;align-items:end}
+.hero h1{font-family:Instrument Serif,serif;font-weight:400;font-size:clamp(34px,5vw,58px);line-height:.95;margin:0;letter-spacing:-.03em;max-width:640px}.hero h1 i{color:var(--accent)}
+.hero p{color:var(--muted);max-width:520px;line-height:1.6;margin:10px 0 0}
+.stats{display:flex;gap:10px}.stat{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px 14px;min-width:96px}.stat b{font-size:20px;display:block}.stat span{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.workspace{max-width:1280px;margin:14px auto 0;padding:0 18px 28px}
+.toolbar{background:var(--panel);border:1px solid var(--line);border-bottom:0;border-radius:18px 18px 0 0;padding:12px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+.langs{display:flex;gap:6px;flex-wrap:wrap}
+.lang{border:1px solid var(--line);background:var(--panel2);padding:7px 11px;border-radius:999px;font-size:13px;font-weight:600;cursor:pointer}.lang.active{background:var(--text);color:var(--bg);border-color:var(--text)}
+.select{padding:8px 10px;border-radius:999px;border:1px solid var(--line);background:var(--panel);font-weight:600}
+.grid{display:grid;grid-template-columns:1.55fr .95fr;min-height:620px;border:1px solid var(--line);background:var(--panel);border-radius:0 0 18px 18px;overflow:hidden}
+.editorWrap{display:flex;flex-direction:column;border-right:1px solid var(--line);background:#0f1419}
+.filebar{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;color:#cbd5e1;font-family:JetBrains Mono,monospace;font-size:12px;background:#171e26}
+.filebar button{background:#232d38;color:#e2e8f0;border:0;padding:6px 10px;border-radius:999px;cursor:pointer}
+#editor{height:430px;width:100%}
+#fallback{flex:1;background:#10161d;color:#e6edf3;border:0;padding:16px;font-family:JetBrains Mono,monospace;font-size:14px;line-height:1.65;resize:none;outline:none;display:none;min-height:430px}
+.io{border-top:1px solid #232a33;background:#121a21;padding:12px;display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.io label{color:#94a3b8;font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:700}.io textarea{width:100%;margin-top:6px;background:#0b1116;color:#e2e8f0;border:1px solid #26313d;border-radius:10px;padding:10px;font-family:JetBrains Mono,monospace;min-height:64px}
+.side{display:flex;flex-direction:column;min-width:0}
+.tabs{display:flex;gap:4px;padding:10px 10px 0;flex-wrap:wrap;border-bottom:1px solid var(--line)}
+.tab{padding:9px 11px;border-radius:999px;border:1px solid transparent;background:transparent;font-weight:700;font-size:13px;cursor:pointer;color:var(--muted)}.tab.active{background:var(--panel2);border-color:var(--line);color:var(--text)}
+.pane{padding:16px;overflow:auto;line-height:1.6;font-size:14px}.pane h3{margin:0 0 8px;font-size:15px}.pane pre{background:var(--codebg);color:#d6deeb;padding:14px;border-radius:12px;overflow:auto;font-family:JetBrains Mono,monospace;font-size:13px;line-height:1.6;white-space:pre-wrap}
+.kv{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}.kv div{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:12px}.kv b{display:block;font-size:18px}.kv span{font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)}
+.token{display:flex;justify-content:space-between;padding:7px 9px;border:1px solid var(--line);border-radius:8px;margin:6px 0;font-family:JetBrains Mono,monospace;font-size:12px}.badge{font-size:11px;padding:2px 7px;border-radius:999px;background:#ccfbf1;color:#134e4a;font-weight:700}
+.phase{border-left:3px solid var(--accent);padding:10px 12px;background:var(--panel2);border-radius:0 12px 12px 0;margin:10px 0}
+.convertRow{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.note{font-size:13px;color:var(--muted)}
+.statusbar{max-width:1280px;margin:0 auto;padding:0 18px 24px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;color:var(--muted);font-size:13px}
+.features{max-width:1280px;margin:0 auto;padding:6px 18px 30px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.feature{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px}.feature h3{margin:0 0 6px}.feature p{color:var(--muted);line-height:1.6;margin:0;font-size:14px}
+@media(max-width:900px){.grid{grid-template-columns:1fr}.editorWrap{border-right:0;border-bottom:1px solid var(--line)}.features{grid-template-columns:1fr}.io{grid-template-columns:1fr}.hero{padding-top:16px}.top{height:auto;position:relative;flex-wrap:wrap;gap:10px;padding:12px 14px}.top-actions{flex-wrap:wrap}.top-actions .btn{padding:8px 10px;font-size:12px}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="logo"><div class="mark">&lt;/&gt;</div><div><b>PolyCompile</b><span>Universal Compiler • MVP</span></div></div>
+  <div class="top-actions">
+    <button class="btn" onclick="downloadCode()">↓ Download</button>
+    <button class="btn" onclick="copyCode()">Copy code</button>
+    <button class="btn dark" onclick="runCode()" id="runTop">▶ Run Code</button>
+  </div>
+</header>
+
+<section class="hero">
+  <div><h1>Write in any language.<br><i>Understand</i> how it compiles.</h1><p>One editor for 13 languages with live execution, stdin, compiler-phase visualization, plain-English error help, code conversion and complexity analysis — built as a working MVP, not just a runner.</p></div>
+  <div class="stats"><div class="stat"><b>13</b><span>Languages</span></div><div class="stat"><b>3</b><span>USP Tools</span></div><div class="stat"><b id="runCount">0</b><span>Runs</span></div></div>
+</section>
+
+<main class="workspace">
+  <div class="toolbar">
+    <div class="langs" id="langs"></div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <select class="select" id="themeSel" onchange="setTheme(this.value)"><option value="vs-dark">Dark Theme</option><option value="vs">Light Theme</option><option value="hc-black">High Contrast</option></select>
+      <select class="select" id="fontSel" onchange="setFont(this.value)"><option value="14">Font 14</option><option value="15">Font 15</option><option value="16">Font 16</option></select>
+      <button class="btn primary" onclick="runCode()">▶ Run (Ctrl+Enter)</button>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="editorWrap">
+      <div class="filebar"><span id="filename">main.py • unsaved in this session</span><span><button onclick="formatHint()">Auto-format hint</button> <button onclick="clearOutput()">Clear output</button></span></div>
+      <div id="editor"></div>
+      <textarea id="fallback" spellcheck="false"></textarea>
+      <div class="io">
+        <div><label>Custom Input — stdin</label><textarea id="stdin" placeholder="e.g. 5&#10;10">5
+10</textarea></div>
+        <div><label>Quick Snippets</label><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px"><button class="btn" onclick="loadSnippet('hello')">Hello World</button><button class="btn" onclick="loadSnippet('loop')">Loops</button><button class="btn" onclick="loadSnippet('fib')">Fibonacci</button><button class="btn" onclick="loadSnippet('sort')">Sorting</button></div><p style="color:#94a3b8;font-size:12px;line-height:1.5;margin:8px 0 0">Tip: Execution uses the public Piston API in isolated containers when online.</p></div>
+      </div>
+    </div>
+
+    <aside class="side">
+      <div class="tabs">
+        <button class="tab active" data-tab="output" onclick="showTab('output',this)">Output</button>
+        <button class="tab" data-tab="visual" onclick="showTab('visual',this)">Compiler Phases</button>
+        <button class="tab" data-tab="ai" onclick="showTab('ai',this)">AI Explainer</button>
+        <button class="tab" data-tab="convert" onclick="showTab('convert',this)">Convert</button>
+        <button class="tab" data-tab="complex" onclick="showTab('complex',this)">Complexity</button>
+      </div>
+
+      <div class="pane" id="pane-output">
+        <h3>Output</h3><p class="note" id="statusLine">Ready. Pick a language, edit code, press Run.</p>
+        <div class="kv"><div><b id="timeVal">—</b><span>Exec time</span></div><div><b id="memVal">—</b><span>Status</span></div></div>
+        <pre id="output">No output yet.
+
+// What happens on Run?
+1. Code + stdin is sent to Piston execution API
+2. Result, errors and timing appear here
+3. Visualizer + AI Explainer update automatically</pre>
+        <h3 style="margin-top:16px">Recent runs (this session)</h3><div id="history"></div>
+      </div>
+
+      <div class="pane" id="pane-visual" style="display:none">
+        <h3>Compiler Phases Visualizer</h3><p class="note">See what a real compiler does — in 3 stages, generated from your current code.</p>
+        <div id="visualContent"></div>
+      </div>
+
+      <div class="pane" id="pane-ai" style="display:none">
+        <h3>AI Error Explainer + Explain Code</h3><p class="note">Plain-English help for errors and step-by-step reading of your code.</p>
+        <button class="btn primary" onclick="explainCode()" style="margin:8px 0">Explain my code</button>
+        <button class="btn" onclick="explainError()">Explain last error</button>
+        <div id="aiContent" style="margin-top:12px"></div>
+      </div>
+
+      <div class="pane" id="pane-convert" style="display:none">
+        <h3>Code Converter</h3><p class="note">Convert the structure of your program to another language. Best for Hello World, input, loops and functions — a learning aid, not a full transpiler.</p>
+        <div class="convertRow"><select id="targetLang" class="select"></select><button class="btn primary" onclick="convertCode()">Convert →</button></div>
+        <pre id="convertOut">Choose a target language and click Convert.</pre>
+        <button class="btn" onclick="useConverted()">Use converted code as editor content</button>
+      </div>
+
+      <div class="pane" id="pane-complex" style="display:none">
+        <h3>Complexity Estimator</h3><div id="complexContent"></div>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<div class="statusbar"><span>⚡ Secure execution via isolated Piston containers • No code is stored on a server by this page</span><span id="langMeta">Python 3.10 • main.py</span></div>
+
+<section class="features">
+  <article class="feature"><h3>🔍 1. Compiler Phases Visualizer</h3><p>Tokens → AST → Intermediate code. The viva differentiator: it proves this is a compiler project, not just an online runner. Updates live from your code.</p></article>
+  <article class="feature"><h3>💬 2. AI Error Explainer</h3><p>Turns cryptic errors like <code>SyntaxError: invalid syntax</code> into a line, a cause, and a fix suggestion in simple English.</p></article>
+  <article class="feature"><h3>🔄 3. Convert + Complexity</h3><p>Jump between languages and estimate time complexity from loops, nesting and recursion — with a plain-English breakdown.</p></article>
+</section>
+
+<section style="max-width:1280px;margin:0 auto;padding:0 18px 36px">
+  <div style="background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px">
+    <h3 style="margin:0 0 8px">4-Week Roadmap — where this MVP goes next</h3>
+    <p style="color:var(--muted);line-height:1.7;margin:0;font-size:14px"><b style="color:var(--text)">Week 1 ✓</b> Editor + 13 languages + stdin + output &nbsp;•&nbsp; <b style="color:var(--text)">Week 2</b> Accounts, saved snippets & shareable links, multi-file projects &nbsp;•&nbsp; <b style="color:var(--text)">Week 3 ✓ (lite)</b> Visualizer + Error Explainer in this MVP &nbsp;•&nbsp; <b style="color:var(--text)">Week 4</b> Own Docker execution backend (FastAPI + Judge0/Piston self-hosted), flowchart & voice-to-code, polish for demo / viva.</p>
+  </div>
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs/loader.js"></script>
+<script>
+var LANGS={
+ python:{label:"Python",file:"main.py",piston:"python",ver:"3.10.0",mono:"python",hello:'name = input("Enter your name: ")\nprint(f"Hello, {name}!")\n\n# Try changing this code and press Run\nfor i in range(1, 6):\n    print(f"Count: {i}")'},
+ c:{label:"C",file:"main.c",piston:"c",ver:"10.2.0",mono:"c",hello:'#include <stdio.h>\nint main(){\n printf("Hello from C!\\n");\n for(int i=1;i<=5;i++) printf("Count: %d\\n", i);\n return 0;\n}'},
+ cpp:{label:"C++",file:"main.cpp",piston:"c++",ver:"10.2.0",mono:"cpp",hello:'#include <bits/stdc++.h>\nusing namespace std;\nint main(){\n cout<<"Hello from C++!"<<endl;\n for(int i=1;i<=5;i++) cout<<"Count: "<<i<<endl;\n return 0;\n}'},
+ java:{label:"Java",file:"Main.java",piston:"java",ver:"15.0.2",mono:"java",hello:'public class Main {\n public static void main(String[] args){\n  System.out.println("Hello from Java!");\n  for(int i=1;i<=5;i++) System.out.println("Count: "+i);\n }\n}'},
+ javascript:{label:"JavaScript",file:"main.js",piston:"javascript",ver:"18.15.0",mono:"javascript",hello:'console.log("Hello from JavaScript!");\nfor(let i=1;i<=5;i++) console.log(`Count: ${i}`);\n\nfunction greet(name){ return "Welcome, "+name; }\nconsole.log(greet("PolyCompile"));'},
+ typescript:{label:"TypeScript",file:"main.ts",piston:"typescript",ver:"5.0.3",mono:"typescript",hello:'const msg: string = "Hello from TypeScript!";\nconsole.log(msg);\nfor(let i:number=1;i<=5;i++) console.log("Count:", i);'},
+ go:{label:"Go",file:"main.go",piston:"go",ver:"1.16.2",mono:"go",hello:'package main\nimport "fmt"\nfunc main(){\n fmt.Println("Hello from Go!")\n for i:=1;i<=5;i++ { fmt.Println("Count:", i) }\n}'},
+ rust:{label:"Rust",file:"main.rs",piston:"rust",ver:"1.68.2",mono:"rust",hello:'fn main(){\n println!("Hello from Rust!");\n for i in 1..=5 { println!("Count: {}", i); }\n}'},
+ php:{label:"PHP",file:"main.php",piston:"php",ver:"8.2.3",mono:"php",hello:'<?php\necho "Hello from PHP!\\n";\nfor($i=1;$i<=5;$i++) echo "Count: $i\\n";\n?>'},
+ ruby:{label:"Ruby",file:"main.rb",piston:"ruby",ver:"3.0.1",mono:"ruby",hello:'puts "Hello from Ruby!"\n(1..5).each { |i| puts "Count: #{i}" }'},
+ kotlin:{label:"Kotlin",file:"Main.kt",piston:"kotlin",ver:"1.8.20",mono:"kotlin",hello:'fun main(){\n println("Hello from Kotlin!")\n for(i in 1..5) println("Count: $i")\n}'},
+ swift:{label:"Swift",file:"main.swift",piston:"swift",ver:"5.3.3",mono:"swift",hello:'print("Hello from Swift!")\nfor i in 1...5 { print("Count: \\(i)") }'},
+ csharp:{label:"C#",file:"Main.cs",piston:"csharp",ver:"6.12.0",mono:"csharp",hello:'using System;\nclass Program{ static void Main(){ Console.WriteLine("Hello from C#!"); for(int i=1;i<=5;i++) Console.WriteLine("Count: "+i); } }'}
+};
+var current="python", editor=null, runs=0, lastError="", lastConverted="";
+var langsEl=document.getElementById('langs'), targetSel=document.getElementById('targetLang');
+Object.keys(LANGS).forEach(function(k){var b=document.createElement('button');b.className='lang'+(k===current?' active':'');b.textContent=LANGS[k].label;b.onclick=function(){switchLang(k)};b.dataset.k=k;langsEl.appendChild(b);var o=document.createElement('option');o.value=k;o.textContent=LANGS[k].label;targetSel.appendChild(o);});
+targetSel.value="java";
+function getCode(){ if(editor) return editor.getValue(); return document.getElementById('fallback').value; }
+function setCode(v){ if(editor) editor.setValue(v); else document.getElementById('fallback').value=v; updateAnalysis(); }
+function switchLang(k){ current=k; document.querySelectorAll('.lang').forEach(function(el){el.classList.toggle('active',el.dataset.k===k)}); document.getElementById('filename').textContent=LANGS[k].file+" • "+LANGS[k].label; document.getElementById('langMeta').textContent=LANGS[k].label+" • "+LANGS[k].file+" • Piston "+LANGS[k].ver; if(editor && window.monaco) monaco.editor.setModelLanguage(editor.getModel(), LANGS[k].mono); setCode(LANGS[k].hello); }
+function showTab(id,btn){ document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active')}); if(btn) btn.classList.add('active'); ['output','visual','ai','convert','complex'].forEach(function(x){document.getElementById('pane-'+x).style.display=x===id?'block':'none'}); if(id==='visual'||id==='complex') updateAnalysis(); }
+function setTheme(v){ if(editor&&window.monaco) monaco.editor.setTheme(v); }
+function setFont(v){ if(editor) editor.updateOptions({fontSize:parseInt(v)}); document.getElementById('fallback').style.fontSize=v+'px'; }
+function downloadCode(){ var blob=new Blob([getCode()],{type:'text/plain'}); var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=LANGS[current].file; a.click(); }
+function copyCode(){ navigator.clipboard&&navigator.clipboard.writeText(getCode()); alertToast('Code copied'); }
+function alertToast(m){ document.getElementById('statusLine').textContent=m; }
+function clearOutput(){ document.getElementById('output').textContent='Output cleared.'; }
+function formatHint(){ document.getElementById('output').textContent='Auto-format tip for '+LANGS[current].label+':\n• Keep indentation consistent (Python is strict)\n• One statement per line for readability\n• Use meaningful variable names — the Explainer reads them.\n\nFull Prettier / clang-format integration is on the Week 4 roadmap.'; }
+function loadSnippet(type){
+ var snippets={
+  hello: LANGS[current].hello,
+  loop: current==='python' ? 'for i in range(5):\n    print(i*i)\n\nwords=["compiler","tokens","AST"]\nfor w in words:\n    print(w.upper())' : current==='javascript' ? 'for(let i=0;i<5;i++) console.log(i*i);' : LANGS[current].hello,
+  fib: current==='python' ? 'def fib(n):\n    a,b=0,1\n    for _ in range(n):\n        print(a, end=" ")\n        a,b=b,a+b\nfib(10)' : current==='javascript' ? 'function fib(n){let a=0,b=1;for(let i=0;i<n;i++){console.log(a);[a,b]=[b,a+b];}} fib(10);' : LANGS[current].hello,
+  sort: current==='python' ? 'nums=[64,34,25,12,22,11,90]\nnums.sort()\nprint("Sorted:", nums)\nprint("Max:", max(nums))' : current==='javascript' ? 'let nums=[64,34,25,12,22,11,90]; nums.sort((a,b)=>a-b); console.log(nums);' : LANGS[current].hello
+ }; setCode(snippets[type]||LANGS[current].hello);
+}
+async function runCode(){
+ runs++; document.getElementById('runCount').textContent=runs;
+ var code=getCode(), stdin=document.getElementById('stdin').value;
+ var out=document.getElementById('output'), status=document.getElementById('statusLine');
+ status.textContent='Running '+LANGS[current].label+' in isolated container…'; out.textContent='⏳ Running…';
+ var t0=performance.now();
+ try{
+   var res=await fetch('https://emkc.org/api/v2/piston/execute',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({language:LANGS[current].piston,version:LANGS[current].ver,files:[{name:LANGS[current].file,content:code}],stdin:stdin})});
+   var data=await res.json(); var dt2=Math.round(performance.now()-t0);
+   var stdout=(data.run&&data.run.stdout)||''; var stderr=(data.run&&data.run.stderr)||''; var compileErr=(data.compile&&data.compile.stderr)||'';
+   lastError=stderr||compileErr||'';
+   out.textContent=(stdout||'')+(lastError?'\n--- Error ---\n'+lastError:'')||'(no output — program ran with no print/output)';
+   document.getElementById('timeVal').textContent=dt2+' ms';
+   document.getElementById('memVal').textContent=lastError?'✕ Error':'✓ Success';
+   status.textContent=lastError?'Finished with error — open AI Explainer for a plain-English fix.':'Completed successfully via Piston API.';
+   addHistory(LANGS[current].label+' • '+dt2+'ms • '+(lastError?'Error':'Success'));
+ }catch(e){
+   out.textContent='Could not reach execution API (offline / network blocked).\n\nYour code is ready — reconnect and press Run again.\n\nCode preview:\n'+code.slice(0,400);
+   document.getElementById('memVal').textContent='Offline'; document.getElementById('timeVal').textContent='—';
+ }
+ updateAnalysis();
+}
+function addHistory(txt){ var h=document.getElementById('history'); var d=document.createElement('div'); d.className='token'; d.innerHTML='<span>'+txt+'</span><span class="badge">session</span>'; h.prepend(d); while(h.children.length>5) h.removeChild(h.lastChild); }
+/* Analysis */
+function tokenize(code){ var re=/("[^"]*"|'[^']*')|\b\d+(\.\d+)?\b|\b(for|while|if|else|def|function|return|class|import|from|print|let|const|var|int|void|public|static)\b|([A-Za-z_][A-Za-z0-9_]*)|([+\-*\/%=<>(){}\[\]:;,.])/g; var toks=[],m; while((m=re.exec(code))!==null && toks.length<28){ var type=m[1]?'STRING':m[2]?'NUMBER':m[3]?'KEYWORD':m[4]?'IDENTIFIER':'OPERATOR'; toks.push({v:m[0],t:type}); } return toks; }
+function updateAnalysis(){
+ var code=getCode(); if(!code) return;
+ var toks=tokenize(code);
+ var lines=code.split('\n').filter(function(l){return l.trim()});
+ var loops=(code.match(/\b(for|while)\b/g)||[]).length; var conds=(code.match(/\bif\b/g)||[]).length; var funcs=(code.match(/\b(def|function|func)\b/g)||[]).length + (code.match(/\w+\s+\w+\s*\(/g)||[]).length;
+ var visual='<div class="phase"><b>Phase 1 — Lexical Analysis (Tokens)</b><p class="note">'+toks.length+' tokens sampled</p>'+toks.slice(0,14).map(function(t){return '<div class="token"><span>'+escapeHtml(t.v)+'</span><span class="badge">'+t.t+'</span></div>'}).join('')+'</div>';
+ visual+='<div class="phase"><b>Phase 2 — Syntax Analysis (AST)</b><pre>Program\n ├─ Statements: '+lines.length+' lines\n ├─ Functions detected: '+funcs+'\n ├─ Loops: '+loops+'  • Conditionals: '+conds+'\n └─ Expressions: '+(code.match(/=/g)||[]).length+' assignments</pre></div>';
+ visual+='<div class="phase"><b>Phase 3 — Intermediate Code (pseudo IR)</b><pre>'+lines.slice(0,6).map(function(l,i){return 't'+(i+1)+' := '+l.trim().slice(0,52)}).join('\n')+'\n; ... optimise → target code</pre></div>';
+ document.getElementById('visualContent').innerHTML=visual;
+ // complexity
+ var nested=/for[\s\S]{0,120}for/.test(code); var comp=nested?'O(n²)':loops>0?'O(n)':/fib|factorial/.test(code)&&/\(n-1\)|\(n - 1\)/.test(code)?'O(2ⁿ) recursive':'O(1) / O(n) — no dominant loop';
+ document.getElementById('complexContent').innerHTML='<div class="kv"><div><b>'+comp.split(' ')[0]+'</b><span>Estimated time</span></div><div><b>'+(loops)+' loops</b><span>'+conds+' conditionals</span></div></div><p>'+escapeHtml(comp)+'</p><p class="note">Heuristic: single loop → O(n), nested loops → O(n²), sorting built-ins → O(n log n), naive recursion → exponential. Space is roughly O(1) unless you allocate arrays inside loops, then O(n).</p><pre>Loops: '+loops+' • Functions: '+funcs+' • Lines: '+lines.length+'</pre>';
+}
+function escapeHtml(s){return s.replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+function explainCode(){
+ var code=getCode(); var lines=code.split('\n').filter(function(l){return l.trim()}).slice(0,8);
+ var html='<b>Step-by-step explanation</b><ol>'+lines.map(function(l){ var t='Executes this statement.'; if(/print|console\.log|cout|System\.out/.test(l)) t='Prints output to the screen.'; else if(/for|while/.test(l)) t='Starts a loop — repeats the next block.'; else if(/if/.test(l)) t='Checks a condition and branches.'; else if(/def |function |func /.test(l)) t='Defines a reusable function.'; else if(/import|include|using/.test(l)) t='Imports a library / header needed by the program.'; else if(/=/.test(l)) t='Assigns a value to a variable.'; return '<li><code>'+escapeHtml(l.trim())+'</code><br><span class="note">'+t+'</span></li>'}).join('')+'</ol>';
+ document.getElementById('aiContent').innerHTML=html;
+}
+function explainError(auto){
+ var err=lastError||''; var msg='';
+ if(!err) msg='<b>No error in the last run.</b><p class="note">If you hit an error, run again and this panel will translate it. Common patterns covered: missing colon/bracket, indentation, undefined name, type mismatch, division by zero.</p>';
+ else if(/invalid syntax|SyntaxError/i.test(err)) msg='<b>Syntax error — the grammar is broken.</b><p>Most common cause in '+LANGS[current].label+': missing <code>:</code> after <code>if / for / def</code>, or an unclosed bracket. Check the line number in the error, look one line above it, add the missing symbol, and re-run.</p>';
+ else if(/IndentationError|indent/i.test(err)) msg='<b>Indentation error.</b><p>Python uses spaces to define blocks. Make every line inside a loop/function indent by the same 4 spaces, and remove tabs mixed with spaces.</p>';
+ else if(/NameError|not defined|undeclared/i.test(err)) msg='<b>Name not defined.</b><p>You used a variable/function before creating it, or there is a spelling mismatch. Define it above the line that uses it and check capitalisation.</p>';
+ else if(/TypeError/i.test(err)) msg='<b>Type mismatch.</b><p>You combined incompatible types — e.g. adding a string to a number. Convert first: <code>int(x)</code> / <code>str(x)</code> in Python, <code>Number(x)</code> in JS.</p>';
+ else msg='<b>Error translated:</b><p>'+escapeHtml(err.slice(0,500))+'</p><p class="note">Read the last line first — it names the error type. Then read the line number, fix that line, and run again. That loop is exactly how professionals debug.</p>';
+ document.getElementById('aiContent').innerHTML=msg; if(auto) showTab('ai',document.querySelector('[data-tab="ai"]'));
+}
+function convertCode(){
+ var target=document.getElementById('targetLang').value; var src=getCode();
+ var out='';
+ if(target==='python') out='# Converted to Python\n# Original: '+LANGS[current].label+'\n\n'+src.replace(/console\.log\((.*)\)/g,'print($1)').replace(/System\.out\.println\((.*)\);?/g,'print($1)')+'\n\n# Structure preserved — review types & imports for production use.';
+ else if(target==='java') out='public class Main {\n  public static void main(String[] args) {\n    // Converted from '+LANGS[current].label+'\n    System.out.println("Hello from Java!");\n    // Paste your logic here, translated line-by-line:\n    // print(x)  -> System.out.println(x);\n    // for i in range(n) -> for(int i=0;i<n;i++)\n  }\n}';
+ else if(target==='javascript') out='// Converted to JavaScript\n'+src.replace(/print\((.*)\)/g,'console.log($1)');
+ else out=LANGS[target].hello+'\n\n// ↑ Starter for '+LANGS[target].label+'\n// Your original '+LANGS[current].label+' logic maps line-by-line:\n// loops → loops, prints → prints, functions → functions.\n// Use Explain Code on the original, then rewrite each step in '+LANGS[target].label+' syntax.';
+ lastConverted=out; document.getElementById('convertOut').textContent=out;
+}
+function useConverted(){ if(!lastConverted){convertCode();} var target=document.getElementById('targetLang').value; switchLang(target); setCode(lastConverted); }
+/* Monaco */
+if(window.require){ require.config({paths:{vs:'https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs'}}); require(['vs/editor/editor.main'],function(){ editor=monaco.editor.create(document.getElementById('editor'),{value:LANGS[current].hello,language:'python',theme:'vs-dark',fontFamily:'JetBrains Mono',fontSize:14,minimap:{enabled:true},automaticLayout:true}); editor.onDidChangeModelContent(updateAnalysis); editor.addCommand(monaco.KeyMod.CtrlCmd|monaco.KeyCode.Enter,function(){runCode()}); updateAnalysis(); }); }
+else { document.getElementById('editor').style.display='none'; document.getElementById('fallback').style.display='block'; document.getElementById('fallback').value=LANGS[current].hello; document.getElementById('fallback').addEventListener('input',updateAnalysis); updateAnalysis(); }
+setTimeout(function(){ if(!editor){ document.getElementById('editor').style.display='none'; var f=document.getElementById('fallback'); f.style.display='block'; if(!f.value) f.value=LANGS[current].hello; f.addEventListener('input',updateAnalysis); updateAnalysis(); } },3500);
+document.addEventListener('keydown',function(e){ if((e.ctrlKey||e.metaKey)&&e.key==='Enter') runCode(); });
+updateAnalysis();
+</script>
+</body>
+</html>

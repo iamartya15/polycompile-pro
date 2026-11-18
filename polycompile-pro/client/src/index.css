@@ -1,0 +1,14 @@
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+html, body, #root { height: 100%; }
+body { font-family: Inter, system-ui, sans-serif; }
+pre, code, textarea { font-family: "JetBrains Mono", ui-monospace, monospace; }
+/* Avoid a white flash before React mounts when the saved theme is dark. */
+html.dark body { background: #020617; }
+/* Accessible, consistent focus indicator everywhere. */
+:focus-visible { outline: 2px solid #6366f1; outline-offset: 1px; border-radius: 4px; }
+/* Right results panel width is user-resizable on wide screens only;
+   below lg it stacks full-width under the editor. */
+@media (min-width: 1024px) { .right-panel { width: var(--rpw, 430px); } }
+/* Quiet scrollbars that match the workspace. */
+* { scrollbar-width: thin; scrollbar-color: rgb(100 116 139 / 0.45) transparent; }
