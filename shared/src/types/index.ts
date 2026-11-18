@@ -5,6 +5,9 @@ export interface LanguageDef {
   judge0LanguageId: number; judge0Name: string;
   fileName: string; extension: string; compiled: boolean;
   supportsStdin: boolean; supportsMultiFile: boolean;
+  supportsPreview?: boolean;
+  timeoutSec?: number;
+  memoryLimitMb?: number;
   visualizerSupport: "full" | "tokens-only" | "none";
   statusNote: string; starterCode: string;
 }

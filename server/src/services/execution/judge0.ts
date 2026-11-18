@@ -37,6 +37,7 @@ export async function listLanguages(fetchFn: typeof fetch = fetch): Promise<Lang
   let langs: J0Language[] | null = null;
   try { langs = await fetchJudge0Languages(fetchFn); } catch { langs = null; }
   return LANGUAGES.map(def => {
+    if (def.id === "html") return { ...def, runtimeAvailable: true, resolvedVersion: "HTML5/CSS3/ES2024" };
     const found = langs?.find(l => l.id === def.judge0LanguageId) ?? null;
     return { ...def, runtimeAvailable: langs ? !!found : null, resolvedVersion: found ? found.name : null };
   });
@@ -45,6 +46,24 @@ export async function executeCode(input: { language: string; code: string; stdin
   const fetchFn = opts.fetchFn ?? fetch;
   const def = getLanguage(input.language);
   if (!def) throw new AppError(400, "UNSUPPORTED_LANGUAGE", `Language '${input.language}' is not in the PolyCompile registry.`);
+  if (def.id === "html") {
+    return {
+      status: "success",
+      language: "html",
+      providerLanguage: "browser:sandbox",
+      version: "HTML5/CSS3/ES2024",
+      stdout: "Web application rendered in live preview sandbox.",
+      stderr: "",
+      compileStdout: "",
+      compileStderr: "",
+      exitCode: 0,
+      signal: null,
+      durationMs: 5,
+      truncated: false,
+      memoryKb: 0,
+      providerTimeSec: 0.005,
+    };
+  }
   if (Buffer.byteLength(input.code) > config.maxSourceBytes) throw new AppError(413, "SOURCE_TOO_LARGE", `Source exceeds the ${config.maxSourceBytes}-byte limit.`);
   if (Buffer.byteLength(input.stdin) > config.maxStdinBytes) throw new AppError(413, "STDIN_TOO_LARGE", `Input exceeds the ${config.maxStdinBytes}-byte limit.`);
   if (input.files.length > 1) throw new AppError(400, "MULTI_FILE_UNSUPPORTED", "The Judge0 provider executes a single source file. Extra files were NOT submitted. Switch EXECUTION_PROVIDER to a (whitelisted/self-hosted) Piston instance for multi-file execution, or merge the files.");
