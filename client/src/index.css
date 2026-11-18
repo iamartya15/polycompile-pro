@@ -46,12 +46,15 @@ html.light {
 
 html, body, #root {
   height: 100%;
+  width: 100%;
   margin: 0;
   padding: 0;
+  overflow: hidden;
   background-color: var(--bg-base);
   color: var(--text-primary);
   font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
+  touch-action: manipulation;
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 
@@ -64,10 +67,19 @@ html.light .ambient-glow {
   background-image: radial-gradient(ellipse at 50% -10%, rgba(99, 102, 241, 0.06), transparent 50%);
 }
 
+/* Hide scrollbar utility */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 /* Custom Scrollbars */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 
 ::-webkit-scrollbar-track {

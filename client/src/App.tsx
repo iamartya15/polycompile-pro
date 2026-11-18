@@ -119,8 +119,13 @@ export default function App() {
     "output" | "stdin" | "ai" | "visualizer" | "diagnostics" | "provider"
   >("output");
 
+  // Device & Responsive states
+  const [isMobile, setIsMobile] = useState(() => typeof window !== "undefined" && window.innerWidth < 768);
+  const [isTablet, setIsTablet] = useState(() => typeof window !== "undefined" && window.innerWidth >= 768 && window.innerWidth < 1024);
+  const [mobileTab, setMobileTab] = useState<"code" | "console" | "ai" | "files">("code");
+
   // Layout states
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(() => typeof window !== "undefined" && window.innerWidth >= 1024);
   const [sidebarTab, setSidebarTab] = useState<"files" | "projects" | "snippets">("files");
   const [splitVertical, setSplitVertical] = useState(false);
   const [isFullscreenOutput, setIsFullscreenOutput] = useState(false);
@@ -148,6 +153,29 @@ export default function App() {
     setToast({ msg, type });
     toastTimeoutRef.current = window.setTimeout(() => setToast(null), 3200);
   };
+
+  // Screen Resize Observer
+  useEffect(() => {
+    const handleResize = () => {
+      const w = window.innerWidth;
+      const mobile = w < 768;
+      const tablet = w >= 768 && w < 1024;
+      setIsMobile(mobile);
+      setIsTablet(tablet);
+      if (mobile) setSidebarOpen(false);
+      editorRef.current?.layout();
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  // Force editor layout refresh on layout toggles
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      editorRef.current?.layout();
+    }, 120);
+    return () => clearTimeout(timer);
+  }, [sidebarOpen, splitVertical, isFullscreenOutput, mobileTab, isMobile]);
 
   // Sync theme
   useEffect(() => {
@@ -214,6 +242,8 @@ export default function App() {
     setRunning(true);
     setRunError("");
     setRightTab("output");
+    if (isMobile) setMobileTab("console");
+
     const ctrl = new AbortController();
     abortRef.current = ctrl;
 
@@ -302,6 +332,7 @@ export default function App() {
     setProject(newProj);
     setActiveFile(0);
     showToast("Created a new blank program.", "success");
+    if (isMobile) setMobileTab("code");
   }
 
   const diagnostics = useMemo(
@@ -332,16 +363,16 @@ export default function App() {
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [project, stdin]); // eslint-disable-line
+  }, [project, stdin, isMobile]); // eslint-disable-line
 
   return (
     <div className="flex flex-col h-screen w-screen overflow-hidden bg-slate-50 dark:bg-[#0b0f19] text-slate-800 dark:text-slate-100 select-none ambient-glow">
       {/* =========================================================================
           TOP NAVBAR
          ========================================================================= */}
-      <header className="h-14 border-b border-slate-200 dark:border-slate-800/80 bg-white/90 dark:bg-[#111827]/90 backdrop-blur-md px-4 flex items-center justify-between shrink-0 z-30 shadow-2xs">
+      <header className="h-14 border-b border-slate-200 dark:border-slate-800/80 bg-white/90 dark:bg-[#111827]/90 backdrop-blur-md px-3 sm:px-4 flex items-center justify-between shrink-0 z-30 shadow-2xs">
         {/* Left: Brand & Program Name */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
             className="p-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-colors cursor-pointer"
@@ -354,7 +385,7 @@ export default function App() {
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500/20 to-purple-500/20 border border-indigo-500/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shadow-sm shadow-indigo-500/10">
               <Code2 size={18} />
             </div>
-            <div className="flex items-baseline gap-1.5">
+            <div className="flex items-baseline gap-1">
               <span className="font-extrabold text-sm tracking-tight text-slate-900 dark:text-slate-100">polycompile</span>
               <span className="text-[10px] font-extrabold uppercase px-1.5 py-0.2 rounded bg-emerald-50 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/30 tracking-wider">
                 PRO
@@ -365,20 +396,20 @@ export default function App() {
           <div className="hidden sm:block h-4 w-px bg-slate-200 dark:bg-slate-800" />
 
           {/* Program Name Input */}
-          <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 hover:border-slate-300 dark:hover:border-slate-600 transition-colors">
+          <div className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 hover:border-slate-300 dark:hover:border-slate-600 transition-colors">
             <FileCode size={13} className="text-slate-400 dark:text-slate-500" />
             <input
               value={project.name}
               onChange={(e) => setProject((p) => ({ ...p, name: e.target.value }))}
               aria-label="Program name"
-              className="bg-transparent text-xs font-semibold text-slate-800 dark:text-slate-200 outline-none w-32 md:w-44 truncate"
+              className="bg-transparent text-xs font-semibold text-slate-800 dark:text-slate-200 outline-none w-28 lg:w-40 truncate"
               title="Click to rename program"
             />
           </div>
         </div>
 
-        {/* Center: System Status Badges */}
-        <div className="hidden lg:flex items-center gap-2.5 text-xs text-slate-500 dark:text-slate-400 font-mono">
+        {/* Center: System Status Badges (Desktop only) */}
+        <div className="hidden xl:flex items-center gap-2.5 text-xs text-slate-500 dark:text-slate-400 font-mono">
           <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800/60 px-2.5 py-1 rounded-full border border-slate-200 dark:border-slate-700/60">
             <span
               className={`w-2 h-2 rounded-full ${
@@ -398,8 +429,8 @@ export default function App() {
                   : "bg-amber-400"
               }`}
             />
-            <span className="text-[11px] text-slate-700 dark:text-slate-300 truncate max-w-[220px]">
-              Judge0 Sandbox: {currentLangInfo?.resolvedVersion ?? currentLangDef.displayName}
+            <span className="text-[11px] text-slate-700 dark:text-slate-300 truncate max-w-[200px]">
+              Judge0: {currentLangInfo?.resolvedVersion ?? currentLangDef.displayName}
             </span>
           </div>
 
@@ -412,12 +443,12 @@ export default function App() {
         </div>
 
         {/* Right: Actions */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2">
           {/* Run / Stop Button */}
           {running ? (
             <button
               onClick={stopCode}
-              className="flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-semibold text-xs shadow-md shadow-rose-600/25 transition-all cursor-pointer"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-semibold text-xs shadow-md shadow-rose-600/25 transition-all cursor-pointer"
             >
               <Square size={13} fill="currentColor" />
               <span>Stop ({(elapsedMs / 1000).toFixed(1)}s)</span>
@@ -425,22 +456,22 @@ export default function App() {
           ) : (
             <button
               onClick={runCode}
-              className="flex items-center gap-2 px-4 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs shadow-md shadow-emerald-600/30 transition-all glow-emerald cursor-pointer group"
+              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs shadow-md shadow-emerald-600/30 transition-all glow-emerald cursor-pointer group"
             >
               <Play size={13} fill="currentColor" className="group-hover:scale-110 transition-transform" />
               <span>Run</span>
-              <kbd className="hidden sm:inline-block ml-1 px-1.5 py-0.5 rounded bg-emerald-700/60 text-[10px] font-mono text-emerald-100 border border-emerald-500/40">
+              <kbd className="hidden sm:inline-block ml-1 px-1 py-0.2 rounded bg-emerald-700/60 text-[9px] font-mono text-emerald-100 border border-emerald-500/40">
                 ⌘↵
               </kbd>
             </button>
           )}
 
-          <div className="h-4 w-px bg-slate-200 dark:bg-slate-800 mx-1" />
+          <div className="h-4 w-px bg-slate-200 dark:bg-slate-800 mx-0.5 sm:mx-1" />
 
           {/* Quick Tools */}
           <button
             onClick={formatDocument}
-            className="hidden sm:flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-colors text-xs font-medium cursor-pointer"
+            className="hidden sm:flex items-center gap-1 px-2 py-1.5 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-colors text-xs font-medium cursor-pointer"
             title="Auto-format code (Monaco TS)"
           >
             Format
@@ -457,13 +488,15 @@ export default function App() {
             <Save size={16} />
           </button>
 
-          <button
-            onClick={() => setSplitVertical(!splitVertical)}
-            className="p-1.5 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-colors hidden md:block cursor-pointer"
-            title={splitVertical ? "Split side-by-side" : "Split top-bottom"}
-          >
-            {splitVertical ? <Columns size={16} /> : <SplitSquareVertical size={16} />}
-          </button>
+          {!isMobile && (
+            <button
+              onClick={() => setSplitVertical(!splitVertical)}
+              className="p-1.5 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-colors hidden md:block cursor-pointer"
+              title={splitVertical ? "Split side-by-side" : "Split top-bottom"}
+            >
+              {splitVertical ? <Columns size={16} /> : <SplitSquareVertical size={16} />}
+            </button>
+          )}
 
           <button
             onClick={() =>
@@ -477,7 +510,7 @@ export default function App() {
 
           <button
             onClick={() => setModalMode("shortcuts")}
-            className="p-1.5 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-colors cursor-pointer"
+            className="p-1.5 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-colors cursor-pointer hidden sm:block"
             title="Keyboard shortcuts (?)"
           >
             <HelpCircle size={16} />
@@ -488,8 +521,8 @@ export default function App() {
       {/* =========================================================================
           LANGUAGE SELECTOR STRIP
          ========================================================================= */}
-      <div className="h-10 border-b border-slate-200 dark:border-slate-800/70 bg-slate-100/70 dark:bg-[#111827]/50 px-3 flex items-center gap-1 overflow-x-auto shrink-0 select-none text-xs">
-        <span className="text-[10px] uppercase font-mono tracking-wider text-slate-500 px-2 shrink-0 font-bold">
+      <div className="h-10 border-b border-slate-200 dark:border-slate-800/70 bg-slate-100/70 dark:bg-[#111827]/50 px-2 sm:px-3 flex items-center gap-1 overflow-x-auto no-scrollbar shrink-0 select-none text-xs">
+        <span className="text-[10px] uppercase font-mono tracking-wider text-slate-500 px-1 sm:px-2 shrink-0 font-bold">
           Medium:
         </span>
         {langInfos.map((l) => {
@@ -514,240 +547,285 @@ export default function App() {
       </div>
 
       {/* =========================================================================
-          MAIN WORKSPACE (SIDEBAR + EDITOR + OUTPUT)
+          MAIN WORKSPACE
          ========================================================================= */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* SIDEBAR */}
+      <div className="flex-1 flex overflow-hidden relative">
+        {/* SIDEBAR (Desktop Pinned or Tablet/Mobile Overlay Drawer) */}
         {sidebarOpen && (
-          <aside className="w-64 border-r border-slate-200 dark:border-slate-800/80 bg-white dark:bg-[#0f172a]/60 flex flex-col shrink-0 select-none">
-            {/* Sidebar Tab Header */}
-            <div className="flex border-b border-slate-200 dark:border-slate-800/80 p-1 bg-slate-50 dark:bg-[#111827]/80 text-xs">
-              <button
-                onClick={() => setSidebarTab("files")}
-                className={`flex-1 py-1.5 rounded-md font-semibold text-center transition-colors cursor-pointer ${
-                  sidebarTab === "files"
-                    ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-2xs border border-slate-200 dark:border-slate-700"
-                    : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
-                }`}
-              >
-                Files
-              </button>
-              <button
-                onClick={() => setSidebarTab("projects")}
-                className={`flex-1 py-1.5 rounded-md font-semibold text-center transition-colors cursor-pointer ${
-                  sidebarTab === "projects"
-                    ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-2xs border border-slate-200 dark:border-slate-700"
-                    : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
-                }`}
-              >
-                Programs
-              </button>
-              <button
-                onClick={() => setSidebarTab("snippets")}
-                className={`flex-1 py-1.5 rounded-md font-semibold text-center transition-colors cursor-pointer ${
-                  sidebarTab === "snippets"
-                    ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-2xs border border-slate-200 dark:border-slate-700"
-                    : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
-                }`}
-              >
-                Library
-              </button>
-            </div>
+          <>
+            {/* Backdrop on mobile/tablet */}
+            {(isMobile || isTablet) && (
+              <div
+                className="fixed inset-0 bg-black/40 backdrop-blur-xs z-40 transition-opacity"
+                onClick={() => setSidebarOpen(false)}
+              />
+            )}
 
-            {/* Sidebar Content */}
-            <div className="flex-1 overflow-y-auto p-3 space-y-4">
-              {sidebarTab === "files" && (
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-mono uppercase text-slate-500 tracking-wider font-bold">
-                      Source Files
-                    </span>
-                    <button
-                      onClick={() => {
-                        setModalInput(`module.${currentLangDef.extension}`);
-                        setModalMode("newFile");
-                      }}
-                      className="text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 text-xs flex items-center gap-1 font-semibold cursor-pointer"
-                    >
-                      <Plus size={13} /> Add
-                    </button>
-                  </div>
+            <aside
+              className={`${
+                isMobile || isTablet
+                  ? "fixed inset-y-0 left-0 z-50 w-72 shadow-2xl animate-modal"
+                  : "w-64 shrink-0"
+              } border-r border-slate-200 dark:border-slate-800/80 bg-white dark:bg-[#0f172a] flex flex-col select-none`}
+            >
+              {/* Sidebar Tab Header */}
+              <div className="flex items-center border-b border-slate-200 dark:border-slate-800/80 p-1 bg-slate-50 dark:bg-[#111827]/80 text-xs">
+                <button
+                  onClick={() => setSidebarTab("files")}
+                  className={`flex-1 py-1.5 rounded-md font-semibold text-center transition-colors cursor-pointer ${
+                    sidebarTab === "files"
+                      ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-2xs border border-slate-200 dark:border-slate-700"
+                      : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
+                  }`}
+                >
+                  Files
+                </button>
+                <button
+                  onClick={() => setSidebarTab("projects")}
+                  className={`flex-1 py-1.5 rounded-md font-semibold text-center transition-colors cursor-pointer ${
+                    sidebarTab === "projects"
+                      ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-2xs border border-slate-200 dark:border-slate-700"
+                      : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
+                  }`}
+                >
+                  Programs
+                </button>
+                <button
+                  onClick={() => setSidebarTab("snippets")}
+                  className={`flex-1 py-1.5 rounded-md font-semibold text-center transition-colors cursor-pointer ${
+                    sidebarTab === "snippets"
+                      ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-2xs border border-slate-200 dark:border-slate-700"
+                      : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
+                  }`}
+                >
+                  Library
+                </button>
 
-                  <div className="space-y-1">
-                    {project.files.map((file, i) => (
-                      <div
-                        key={i}
-                        className={`group flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-mono transition-colors cursor-pointer ${
-                          i === activeFile
-                            ? "bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-500/30 font-semibold shadow-2xs"
-                            : "text-slate-700 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/50"
-                        }`}
-                        onClick={() => setActiveFile(i)}
+                {(isMobile || isTablet) && (
+                  <button
+                    onClick={() => setSidebarOpen(false)}
+                    className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 ml-1 rounded-md"
+                  >
+                    <X size={15} />
+                  </button>
+                )}
+              </div>
+
+              {/* Sidebar Content */}
+              <div className="flex-1 overflow-y-auto p-3 space-y-4">
+                {sidebarTab === "files" && (
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-mono uppercase text-slate-500 tracking-wider font-bold">
+                        Source Files
+                      </span>
+                      <button
+                        onClick={() => {
+                          setModalInput(`module.${currentLangDef.extension}`);
+                          setModalMode("newFile");
+                        }}
+                        className="text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 text-xs flex items-center gap-1 font-semibold cursor-pointer"
                       >
-                        <div className="flex items-center gap-2 truncate">
-                          <FileCode size={14} className={i === activeFile ? "text-indigo-600 dark:text-indigo-400" : "text-slate-400 dark:text-slate-500"} />
-                          <span className="truncate">{file.name}</span>
-                        </div>
+                        <Plus size={13} /> Add
+                      </button>
+                    </div>
 
-                        <div className="hidden group-hover:flex items-center gap-1">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setModalInput(file.name);
-                              setModalMode("renameFile");
-                            }}
-                            className="p-1 hover:text-slate-900 dark:hover:text-slate-100 rounded"
-                            title="Rename file"
-                          >
-                            <Edit2 size={12} />
-                          </button>
-                          {project.files.length > 1 && (
+                    <div className="space-y-1">
+                      {project.files.map((file, i) => (
+                        <div
+                          key={i}
+                          className={`group flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-mono transition-colors cursor-pointer ${
+                            i === activeFile
+                              ? "bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-500/30 font-semibold shadow-2xs"
+                              : "text-slate-700 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/50"
+                          }`}
+                          onClick={() => {
+                            setActiveFile(i);
+                            if (isMobile) {
+                              setMobileTab("code");
+                              setSidebarOpen(false);
+                            }
+                          }}
+                        >
+                          <div className="flex items-center gap-2 truncate">
+                            <FileCode size={14} className={i === activeFile ? "text-indigo-600 dark:text-indigo-400" : "text-slate-400 dark:text-slate-500"} />
+                            <span className="truncate">{file.name}</span>
+                          </div>
+
+                          <div className="hidden group-hover:flex items-center gap-1">
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
-                                setProject((p) => ({
-                                  ...p,
-                                  files: p.files.filter((_, idx) => idx !== i),
-                                }));
-                                setActiveFile(0);
-                                showToast(`Deleted ${file.name}`, "info");
+                                setModalInput(file.name);
+                                setModalMode("renameFile");
                               }}
-                              className="p-1 hover:text-rose-600 dark:hover:text-rose-400 rounded"
-                              title="Delete file"
+                              className="p-1 hover:text-slate-900 dark:hover:text-slate-100 rounded"
+                              title="Rename file"
                             >
-                              <Trash2 size={12} />
+                              <Edit2 size={12} />
+                            </button>
+                            {project.files.length > 1 && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setProject((p) => ({
+                                    ...p,
+                                    files: p.files.filter((_, idx) => idx !== i),
+                                  }));
+                                  setActiveFile(0);
+                                  showToast(`Deleted ${file.name}`, "info");
+                                }}
+                                className="p-1 hover:text-rose-600 dark:hover:text-rose-400 rounded"
+                                title="Delete file"
+                              >
+                                <Trash2 size={12} />
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {sidebarTab === "projects" && (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-mono uppercase text-slate-500 tracking-wider font-bold">
+                        Saved Programs
+                      </span>
+                      <button
+                        onClick={createNewProject}
+                        className="text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 flex items-center gap-1 font-semibold cursor-pointer"
+                      >
+                        <Plus size={13} /> New
+                      </button>
+                    </div>
+
+                    <div className="space-y-1">
+                      {projects.map((p) => (
+                        <div
+                          key={p.id}
+                          className={`group flex items-center justify-between p-2 rounded-lg text-xs transition-colors cursor-pointer ${
+                            p.id === project.id
+                              ? "bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 border border-slate-200 dark:border-slate-700/80 font-semibold shadow-2xs"
+                              : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40"
+                          }`}
+                          onClick={() => {
+                            setProject(p);
+                            setActiveFile(0);
+                            setResult(null);
+                            if (isMobile) {
+                              setMobileTab("code");
+                              setSidebarOpen(false);
+                            }
+                          }}
+                        >
+                          <div className="truncate">
+                            <p className="truncate">{p.name}</p>
+                            <span className="text-[10px] font-mono text-slate-400 dark:text-slate-500 uppercase">
+                              {p.language} · {new Date(p.updatedAt).toLocaleDateString()}
+                            </span>
+                          </div>
+
+                          {projects.length > 1 && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                const rest = projects.filter((x) => x.id !== p.id);
+                                setProjects(rest);
+                                saveProjects(rest);
+                                if (p.id === project.id && rest[0]) setProject(rest[0]);
+                                showToast(`Deleted "${p.name}"`, "info");
+                              }}
+                              className="opacity-0 group-hover:opacity-100 p-1 hover:text-rose-600 dark:hover:text-rose-400 transition-opacity"
+                              title="Delete program"
+                            >
+                              <Trash2 size={13} />
                             </button>
                           )}
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
-              {sidebarTab === "projects" && (
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
+                {sidebarTab === "snippets" && (
+                  <div className="space-y-3">
                     <span className="text-[10px] font-mono uppercase text-slate-500 tracking-wider font-bold">
-                      Saved Programs
+                      Quick Start Templates
                     </span>
+
                     <button
-                      onClick={createNewProject}
-                      className="text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 flex items-center gap-1 font-semibold cursor-pointer"
-                    >
-                      <Plus size={13} /> New
-                    </button>
-                  </div>
-
-                  <div className="space-y-1">
-                    {projects.map((p) => (
-                      <div
-                        key={p.id}
-                        className={`group flex items-center justify-between p-2 rounded-lg text-xs transition-colors cursor-pointer ${
-                          p.id === project.id
-                            ? "bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 border border-slate-200 dark:border-slate-700/80 font-semibold shadow-2xs"
-                            : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40"
-                        }`}
-                        onClick={() => {
-                          setProject(p);
-                          setActiveFile(0);
-                          setResult(null);
-                        }}
-                      >
-                        <div className="truncate">
-                          <p className="truncate">{p.name}</p>
-                          <span className="text-[10px] font-mono text-slate-400 dark:text-slate-500 uppercase">
-                            {p.language} · {new Date(p.updatedAt).toLocaleDateString()}
-                          </span>
-                        </div>
-
-                        {projects.length > 1 && (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              const rest = projects.filter((x) => x.id !== p.id);
-                              setProjects(rest);
-                              saveProjects(rest);
-                              if (p.id === project.id && rest[0]) setProject(rest[0]);
-                              showToast(`Deleted "${p.name}"`, "info");
-                            }}
-                            className="opacity-0 group-hover:opacity-100 p-1 hover:text-rose-600 dark:hover:text-rose-400 transition-opacity"
-                            title="Delete program"
-                          >
-                            <Trash2 size={13} />
-                          </button>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {sidebarTab === "snippets" && (
-                <div className="space-y-3">
-                  <span className="text-[10px] font-mono uppercase text-slate-500 tracking-wider font-bold">
-                    Quick Start Templates
-                  </span>
-
-                  <button
-                    onClick={() => {
-                      setCode(currentLangDef.starterCode);
-                      showToast(`Loaded ${currentLangDef.displayName} starter template.`, "success");
-                    }}
-                    className="w-full text-left p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/40 hover:bg-slate-100 dark:hover:bg-slate-800/80 border border-slate-200 dark:border-slate-800 hover:border-indigo-300 dark:hover:border-slate-700 transition-all text-xs cursor-pointer shadow-2xs"
-                  >
-                    <p className="font-semibold text-slate-900 dark:text-slate-200">Default Starter Code</p>
-                    <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-                      Standard hello world and looping template for {currentLangDef.displayName}.
-                    </p>
-                  </button>
-
-                  {(SNIPPETS[project.language] ?? []).map((snip, idx) => (
-                    <button
-                      key={idx}
                       onClick={() => {
-                        setCode(snip.code);
-                        showToast(`Loaded "${snip.name}".`, "success");
+                        setCode(currentLangDef.starterCode);
+                        showToast(`Loaded ${currentLangDef.displayName} starter template.`, "success");
+                        if (isMobile) {
+                          setMobileTab("code");
+                          setSidebarOpen(false);
+                        }
                       }}
                       className="w-full text-left p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/40 hover:bg-slate-100 dark:hover:bg-slate-800/80 border border-slate-200 dark:border-slate-800 hover:border-indigo-300 dark:hover:border-slate-700 transition-all text-xs cursor-pointer shadow-2xs"
                     >
-                      <p className="font-semibold text-slate-900 dark:text-slate-200">{snip.name}</p>
-                      <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 leading-normal">{snip.desc}</p>
+                      <p className="font-semibold text-slate-900 dark:text-slate-200">Default Starter Code</p>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                        Standard hello world and looping template for {currentLangDef.displayName}.
+                      </p>
                     </button>
-                  ))}
-                </div>
-              )}
-            </div>
 
-            {/* Sidebar Footer: Import / Export */}
-            <div className="p-3 border-t border-slate-200 dark:border-slate-800/80 flex items-center justify-between text-xs text-slate-600 dark:text-slate-400 bg-slate-50/80 dark:bg-[#0f172a]/80">
-              <button
-                onClick={exportProject}
-                className="flex items-center gap-1.5 hover:text-slate-900 dark:hover:text-slate-100 transition-colors font-medium cursor-pointer"
-                title="Export this program as JSON"
-              >
-                <FileDown size={14} /> Export
-              </button>
+                    {(SNIPPETS[project.language] ?? []).map((snip, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => {
+                          setCode(snip.code);
+                          showToast(`Loaded "${snip.name}".`, "success");
+                          if (isMobile) {
+                            setMobileTab("code");
+                            setSidebarOpen(false);
+                          }
+                        }}
+                        className="w-full text-left p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/40 hover:bg-slate-100 dark:hover:bg-slate-800/80 border border-slate-200 dark:border-slate-800 hover:border-indigo-300 dark:hover:border-slate-700 transition-all text-xs cursor-pointer shadow-2xs"
+                      >
+                        <p className="font-semibold text-slate-900 dark:text-slate-200">{snip.name}</p>
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 leading-normal">{snip.desc}</p>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
 
-              <label className="flex items-center gap-1.5 hover:text-slate-900 dark:hover:text-slate-100 transition-colors cursor-pointer font-medium">
-                <Upload size={14} /> Import
-                <input
-                  type="file"
-                  accept=".json"
-                  className="hidden"
-                  onChange={(e) => e.target.files?.[0] && importProject(e.target.files[0])}
-                />
-              </label>
-            </div>
-          </aside>
+              {/* Sidebar Footer: Import / Export */}
+              <div className="p-3 border-t border-slate-200 dark:border-slate-800/80 flex items-center justify-between text-xs text-slate-600 dark:text-slate-400 bg-slate-50/80 dark:bg-[#0f172a]/80">
+                <button
+                  onClick={exportProject}
+                  className="flex items-center gap-1.5 hover:text-slate-900 dark:hover:text-slate-100 transition-colors font-medium cursor-pointer"
+                  title="Export this program as JSON"
+                >
+                  <FileDown size={14} /> Export
+                </button>
+
+                <label className="flex items-center gap-1.5 hover:text-slate-900 dark:hover:text-slate-100 transition-colors cursor-pointer font-medium">
+                  <Upload size={14} /> Import
+                  <input
+                    type="file"
+                    accept=".json"
+                    className="hidden"
+                    onChange={(e) => e.target.files?.[0] && importProject(e.target.files[0])}
+                  />
+                </label>
+              </div>
+            </aside>
+          </>
         )}
 
-        {/* EDITOR & OUTPUT CONTAINER */}
-        <div className={`flex-1 flex ${splitVertical ? "flex-col" : "flex-row"} overflow-hidden`}>
+        {/* WORKSPACE CONTENT AREA (Responsive Desktop / Tablet / Mobile) */}
+        <div className={`flex-1 flex ${isMobile ? "flex-col" : splitVertical ? "flex-col" : "flex-row"} overflow-hidden`}>
           {/* EDITOR STAGE */}
           <div
             className={`flex flex-col bg-white dark:bg-[#0b0f19] overflow-hidden ${
-              isFullscreenOutput ? "hidden" : "flex-1"
+              isMobile
+                ? mobileTab === "code" ? "flex-1" : "hidden"
+                : isFullscreenOutput ? "hidden" : "flex-1"
             }`}
           >
             {/* Editor Sub-Header / Tab Bar */}
@@ -757,15 +835,15 @@ export default function App() {
                   <FileCode size={12} className="text-indigo-600 dark:text-indigo-400" />
                   {project.files[activeFile]?.name}
                 </span>
-                <span className="text-[11px] text-slate-500">
+                <span className="text-[11px] text-slate-500 hidden sm:inline">
                   {currentLangDef.displayName} ({currentLangDef.extension})
                 </span>
               </div>
 
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 sm:gap-3">
                 {/* Font Size Adjuster */}
                 <div className="flex items-center gap-1 text-[11px] font-mono text-slate-600 dark:text-slate-400">
-                  <span>Font:</span>
+                  <span className="hidden sm:inline">Font:</span>
                   <button
                     onClick={() => setSettings((s) => ({ ...s, fontSize: Math.max(11, s.fontSize - 1) }))}
                     className="w-5 h-5 flex items-center justify-center rounded hover:bg-slate-200 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100 cursor-pointer"
@@ -817,14 +895,14 @@ export default function App() {
                   fontSize: settings.fontSize,
                   fontFamily: "'JetBrains Mono', 'DM Mono', monospace",
                   fontLigatures: true,
-                  minimap: { enabled: true },
+                  minimap: { enabled: !isMobile },
                   automaticLayout: true,
                   tabSize: 4,
                   scrollBeyondLastLine: false,
                   bracketPairColorization: { enabled: true },
                   cursorBlinking: "smooth",
                   cursorSmoothCaretAnimation: "on",
-                  lineNumbers: "on",
+                  lineNumbers: isMobile ? "off" : "on",
                   padding: { top: 12, bottom: 12 },
                 }}
               />
@@ -834,15 +912,17 @@ export default function App() {
           {/* SPLIT CONSOLE & COPILOT STAGE */}
           <div
             className={`flex flex-col border-l border-slate-200 dark:border-slate-800/80 bg-white dark:bg-[#0c101a]/70 overflow-hidden ${
-              isFullscreenOutput ? "flex-1" : splitVertical ? "h-1/2 border-t border-l-0" : "w-full md:w-[460px] lg:w-[520px]"
+              isMobile
+                ? mobileTab === "console" || mobileTab === "ai" ? "flex-1 border-l-0" : "hidden"
+                : isFullscreenOutput ? "flex-1" : splitVertical ? "h-1/2 border-t border-l-0" : "w-full md:w-[420px] lg:w-[480px] xl:w-[540px]"
             }`}
           >
             {/* Console Tabs */}
-            <div className="h-9 border-b border-slate-200 dark:border-slate-800/80 bg-slate-50/90 dark:bg-[#111827]/90 px-3 flex items-center justify-between shrink-0 select-none text-xs">
-              <div className="flex items-center gap-1 overflow-x-auto">
+            <div className="h-9 border-b border-slate-200 dark:border-slate-800/80 bg-slate-50/90 dark:bg-[#111827]/90 px-2 sm:px-3 flex items-center justify-between shrink-0 select-none text-xs">
+              <div className="flex items-center gap-1 overflow-x-auto no-scrollbar">
                 <button
                   onClick={() => setRightTab("output")}
-                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md transition-colors cursor-pointer ${
+                  className={`flex items-center gap-1.5 px-2 sm:px-2.5 py-1 rounded-md transition-colors cursor-pointer ${
                     rightTab === "output"
                       ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 font-bold shadow-2xs border border-slate-200 dark:border-slate-700"
                       : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
@@ -854,7 +934,7 @@ export default function App() {
 
                 <button
                   onClick={() => setRightTab("stdin")}
-                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md transition-colors cursor-pointer ${
+                  className={`flex items-center gap-1.5 px-2 sm:px-2.5 py-1 rounded-md transition-colors cursor-pointer ${
                     rightTab === "stdin"
                       ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 font-bold shadow-2xs border border-slate-200 dark:border-slate-700"
                       : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
@@ -865,7 +945,7 @@ export default function App() {
 
                 <button
                   onClick={() => setRightTab("ai")}
-                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md transition-colors cursor-pointer ${
+                  className={`flex items-center gap-1.5 px-2 sm:px-2.5 py-1 rounded-md transition-colors cursor-pointer ${
                     rightTab === "ai"
                       ? "bg-indigo-50 dark:bg-indigo-600/30 text-indigo-700 dark:text-indigo-300 font-bold border border-indigo-200 dark:border-indigo-500/40 shadow-2xs"
                       : "text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300"
@@ -877,19 +957,20 @@ export default function App() {
 
                 <button
                   onClick={() => setRightTab("visualizer")}
-                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md transition-colors cursor-pointer ${
+                  className={`flex items-center gap-1.5 px-2 sm:px-2.5 py-1 rounded-md transition-colors cursor-pointer ${
                     rightTab === "visualizer"
                       ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 font-bold shadow-2xs border border-slate-200 dark:border-slate-700"
                       : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
                   }`}
                 >
                   <Layers size={13} className="text-amber-500 dark:text-amber-400" />
-                  <span>Visualizer</span>
+                  <span className="hidden sm:inline">Visualizer</span>
+                  <span className="sm:hidden">AST</span>
                 </button>
 
                 <button
                   onClick={() => setRightTab("provider")}
-                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md transition-colors cursor-pointer ${
+                  className={`flex items-center gap-1.5 px-2 sm:px-2.5 py-1 rounded-md transition-colors cursor-pointer ${
                     rightTab === "provider"
                       ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 font-bold shadow-2xs border border-slate-200 dark:border-slate-700"
                       : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
@@ -900,14 +981,15 @@ export default function App() {
                 </button>
               </div>
 
-              {/* Maximize / Minimize output toggle */}
-              <button
-                onClick={() => setIsFullscreenOutput(!isFullscreenOutput)}
-                className="p-1 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 rounded cursor-pointer"
-                title={isFullscreenOutput ? "Restore split view" : "Maximize console"}
-              >
-                {isFullscreenOutput ? <Minimize2 size={13} /> : <Maximize2 size={13} />}
-              </button>
+              {!isMobile && (
+                <button
+                  onClick={() => setIsFullscreenOutput(!isFullscreenOutput)}
+                  className="p-1 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 rounded cursor-pointer"
+                  title={isFullscreenOutput ? "Restore split view" : "Maximize console"}
+                >
+                  {isFullscreenOutput ? <Minimize2 size={13} /> : <Maximize2 size={13} />}
+                </button>
+              )}
             </div>
 
             {/* Error banner if execution failed */}
@@ -1015,6 +1097,72 @@ export default function App() {
       </div>
 
       {/* =========================================================================
+          MOBILE BOTTOM NAVIGATION (Only on Screens < 768px)
+         ========================================================================= */}
+      {isMobile && (
+        <nav className="h-12 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-[#111827] flex items-center justify-around shrink-0 z-30 select-none text-[11px] font-semibold">
+          <button
+            onClick={() => setMobileTab("code")}
+            className={`flex flex-col items-center justify-center py-1 flex-1 transition-colors ${
+              mobileTab === "code"
+                ? "text-indigo-600 dark:text-indigo-400 font-bold"
+                : "text-slate-500 dark:text-slate-400"
+            }`}
+          >
+            <Code2 size={16} />
+            <span>Code</span>
+          </button>
+
+          <button
+            onClick={() => {
+              setMobileTab("console");
+              setRightTab("output");
+            }}
+            className={`flex flex-col items-center justify-center py-1 flex-1 relative transition-colors ${
+              mobileTab === "console"
+                ? "text-indigo-600 dark:text-indigo-400 font-bold"
+                : "text-slate-500 dark:text-slate-400"
+            }`}
+          >
+            <Terminal size={16} />
+            <span>Console</span>
+            {result && (
+              <span className={`absolute top-1 right-1/4 w-1.5 h-1.5 rounded-full ${
+                result.status === "success" ? "bg-emerald-500" : "bg-rose-500"
+              }`} />
+            )}
+          </button>
+
+          <button
+            onClick={() => {
+              setMobileTab("ai");
+              setRightTab("ai");
+            }}
+            className={`flex flex-col items-center justify-center py-1 flex-1 transition-colors ${
+              mobileTab === "ai"
+                ? "text-indigo-600 dark:text-indigo-400 font-bold"
+                : "text-slate-500 dark:text-slate-400"
+            }`}
+          >
+            <Sparkles size={16} />
+            <span>AI Copilot</span>
+          </button>
+
+          <button
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            className={`flex flex-col items-center justify-center py-1 flex-1 transition-colors ${
+              sidebarOpen
+                ? "text-indigo-600 dark:text-indigo-400 font-bold"
+                : "text-slate-500 dark:text-slate-400"
+            }`}
+          >
+            <FileCode size={16} />
+            <span>Files & Lib</span>
+          </button>
+        </nav>
+      )}
+
+      {/* =========================================================================
           MODALS & DIALOGS
          ========================================================================= */}
       {modalMode && (
@@ -1052,6 +1200,7 @@ export default function App() {
                         }));
                         setActiveFile(project.files.length);
                         showToast(`Created file ${modalInput.trim()}`, "success");
+                        if (isMobile) setMobileTab("code");
                       }
                       setModalMode(null);
                     }}
@@ -1150,7 +1299,7 @@ export default function App() {
           FLOATING TOAST NOTIFICATIONS
          ========================================================================= */}
       {toast && (
-        <div className="fixed bottom-5 right-5 z-50 animate-toast">
+        <div className="fixed bottom-14 sm:bottom-5 right-3 sm:right-5 z-50 animate-toast max-w-[90vw]">
           <div
             className={`flex items-center gap-2.5 px-4 py-2.5 rounded-xl border shadow-xl text-xs font-semibold backdrop-blur-md ${
               toast.type === "success"
@@ -1167,7 +1316,7 @@ export default function App() {
             ) : (
               <Info size={14} className="text-indigo-600 dark:text-indigo-400 shrink-0" />
             )}
-            <span>{toast.msg}</span>
+            <span className="truncate">{toast.msg}</span>
           </div>
         </div>
       )}
